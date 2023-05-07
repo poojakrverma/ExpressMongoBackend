@@ -54,19 +54,18 @@ export const GetAllCitiesByStateCode = async (req, res, next) => {
 
 export const GetAllCitiesByCountryCode = async (req, res, next) => {
     try {
-        const country_code = req.params.country_code;
+        const { country_code } = req.params;
         if (!country_code) {
             return next(new ErrorHandler("country code is required", 400));
         }
-        const cities = await City.find({ country_code: country_code });
-        if (!cities) {
+        const cities = await City.find({ country_code });
+        if (cities.length === 0) {
             return next(new ErrorHandler("invalid country code", 204));
         }
-
         res.status(200).json({
             success: true,
-            cities
-        })
+            cities: cities.length ? cities : []
+        });
     } catch (error) {
         next(error);
     }
