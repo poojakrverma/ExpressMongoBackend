@@ -1,5 +1,6 @@
 import express from 'express'
 import userRouter from './routes/user.js'
+import areaRouter from './routes/comman/area.js'
 import { config } from 'dotenv'
 // import swaggerJSDoc from 'swagger-jsdoc';
 // import swaggerUi from 'swagger-ui-express';
@@ -28,6 +29,7 @@ app.use(
   );
 
 app.use("/user", userRouter);
+app.use("/Area", areaRouter);
 
 app.get('/', (req, res) => {
     res.send("nice working")
