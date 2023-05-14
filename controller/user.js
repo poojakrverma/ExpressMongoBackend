@@ -2,6 +2,7 @@ import { User } from "../models/user.js";
 import bcrypt from 'bcrypt';
 import { SetCookie } from "../utils/feature.js";
 import ErrorHandler from "../middlewares/error.js";
+import KeyGen from "../utils/key.js";
 
 export const getAllUsers = async (req, res, next) => {
     try {
@@ -61,11 +62,11 @@ export const createUser = async (req, res, next) => {
     }
 };
 
-export const register = async (req, res,next) => {
+export const register = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
+        const { role_id, name, email, password } = req.body;
 
-        let user = await User.findOne({ email: email });
+        let user = await User.findOne({ role_id: role_id, email: email });
 
         if (user) {
             return res.status(500).json({
@@ -76,9 +77,12 @@ export const register = async (req, res,next) => {
 
         const hashPassword = await bcrypt.hash(password, 10);
         user = await User.create({
+            user_id: KeyGen.GetKey(),
+            role_id: role_id,
             name: name,
             email: email,
-            password: hashPassword
+            password: hashPassword,
+            is_active: true
         });
 
         SetCookie(user, res, "registered successfully", 201);
@@ -88,23 +92,23 @@ export const register = async (req, res,next) => {
 }
 
 export const login = async (req, res, next) => {
-   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email }).select("+password");
-    if (!user) {
-        return next(new ErrorHandler("invalid email or password", 404));
-    }
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email }).select("+password");
+        if (!user) {
+            return next(new ErrorHandler("invalid email or password", 404));
+        }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-        return next(new ErrorHandler("invalid email or password", 401));
-    }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return next(new ErrorHandler("invalid email or password", 401));
+        }
 
-    console.log("cookie");
-    SetCookie(user, res, `Welcome Back, ${user.name}`, 200);
-   } catch (error) {
-    next(error);
-   }
+        console.log("cookie");
+        SetCookie(user, res, `Welcome Back, ${user.name}`, 200);
+    } catch (error) {
+        next(error);
+    }
 }
 
 export const me = (req, res) => {

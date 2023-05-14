@@ -1,7 +1,7 @@
-class KeyGen {
-    static getKey() {
+export default class KeyGen {
+    static GetKey() {
         const date = new Date();
-        const key = date.getUTCFullYear().toString().substr(-2) +
+        const key = date.getUTCFullYear().toString() +
             ('0' + (date.getUTCMonth() + 1)).slice(-2) +
             ('0' + date.getUTCDate()).slice(-2) +
             ('0' + date.getUTCHours()).slice(-2) +
