@@ -3,8 +3,9 @@ import express from "express";
 const router = express.Router();
 
 router.get('/GetLocalIpAddress', (req, res) => {
+    const remoteIpAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const localIpAdress = req.ip;
-    const remoteIpAddress = req.connection.remoteAddress;
+    //const remoteIpAddress = req.connection.remoteAddress;
     console.log('local ip address : ' + localIpAdress);
     console.log('remote ip address : ' + remoteIpAddress)
     res.send({

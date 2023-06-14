@@ -14,7 +14,7 @@ import cors from 'cors';
 import { checkUser } from './middlewares/auth.js'
 
 export const app = express();
-
+app.enable('trust proxy');
 config({
   path: "./data/config.env"
 })
