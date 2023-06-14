@@ -12,8 +12,7 @@ router.get('/GetLocalIpAddress', (req, res) => {
     console.log('remote ip address : ' + remoteIpAddress)
     res.send({
         "local Ip Address": localIpAdress,
-        "remote Ip Address": remoteIpAddress,
-        "address": address,
+        "remote Ip Address": remoteIpAddress
     })
 })
 
