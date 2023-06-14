@@ -1,7 +1,9 @@
 import express from 'express'
+import networkRouter from './routes/network/network.router.js'
 import userRouter from './routes/user.js'
 import areaRouter from './routes/comman/area.js'
 import foodCategoryRouter from './routes/food/foodCategory.router.js'
+import foodDetailsRouter from './routes/food/foodDetails.router.js'
 import { config } from 'dotenv'
 // import swaggerJSDoc from 'swagger-jsdoc';
 // import swaggerUi from 'swagger-ui-express';
@@ -9,6 +11,7 @@ import { config } from 'dotenv'
 import cookieParser from 'cookie-parser';
 import { errorMiddleware } from './middlewares/error.js';
 import cors from 'cors';
+import { checkUser } from './middlewares/auth.js'
 
 export const app = express();
 
@@ -29,9 +32,12 @@ app.use(
   })
 );
 
+// app.get('*', checkUser); // apply in every routes
+app.use("/api/v1/connection", networkRouter)
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/Area", areaRouter);
 app.use("/api/v1/FoodCategory", foodCategoryRouter)
+app.use("/api/v1/FoodDetails", foodDetailsRouter)
 
 app.get('/', (req, res) => {
   res.send("nice working")

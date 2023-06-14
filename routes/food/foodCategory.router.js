@@ -1,17 +1,19 @@
 import express from "express";
-import foodCategoryController from "./../../controller/food/fooCategory.controller.js";
+import { Create, Update, Delete, GetAll, GetById } from "./../../controller/food/fooCategory.controller.js";
 import { isAuthenticated } from "../../middlewares/auth.js";
 
 
 const router = express.Router();
 
-router.post('/SaveFooodCategory', isAuthenticated, async (req, res) => {
-    return res = foodCategoryController.Create(req, res);
-});
+router.post('/SaveFooodCategory', isAuthenticated, Create);
 
-router.get('/GetFoodCategroryById/:id', async (req, res) => {
-    return foodCategoryController.GetById(req, res);
-})
+router.post('/UpdateFooodCategory', isAuthenticated, Update);
+
+router.delete('/DeleteFoodCategory', isAuthenticated, Delete);
+
+router.get('/GetFoodCategroryById/:id', GetById);
+
+router.get('/GetAllFoodCategory', GetAll);
 
 
 export default router;

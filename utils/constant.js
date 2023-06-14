@@ -24,7 +24,7 @@ const Rating = {
 };
 
 // constants
-const Message = {
+export const Message = {
     Fethched: "Fetch Successfully",
     NotFetch: "Not Fetched",
     WrongId: "Wrong Id is given",

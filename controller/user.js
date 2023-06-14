@@ -3,6 +3,11 @@ import bcrypt from 'bcrypt';
 import { SetCookie } from "../utils/feature.js";
 import ErrorHandler from "../middlewares/error.js";
 import KeyGen from "../utils/key.js";
+import Jwt from 'jsonwebtoken';
+import redis from 'redis'
+
+const client = redis.createClient(process.env.EXTERNAL_REDISH_URL);
+
 
 export const getAllUsers = async (req, res, next) => {
     try {
@@ -93,6 +98,8 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
     try {
+
+        //  await connectToRedis();
         const { email, password } = req.body;
         const user = await User.findOne({ email }).select("+password");
         if (!user) {
@@ -105,10 +112,44 @@ export const login = async (req, res, next) => {
         }
 
         console.log("cookie");
-        SetCookie(user, res, `Welcome Back, ${user.name}`, 200);
+        await SetCookie(user, res, `Welcome Back, ${user.name}`, 200);
     } catch (error) {
         next(error);
     }
+}
+
+export const RefreshToken = async (req, res, next) => {
+    // const { refreshToken } = req.body;
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) {
+        return next(new ErrorHandler("Refresh token is required", 401));
+    }
+
+    client.get("refreshToken", (err, value) => {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            console.log(value);
+        }
+    })
+
+    // if (!refreshTokens.includes(refreshToken)) {
+    //     return next(new ErrorHandler("Refresh token is invalid", 403));
+    // }
+
+    Jwt.verify(refreshToken, process.env.REFRESH_SECRET, async (err, decoded) => {
+        if (err) {
+            return next(new ErrorHandler("Refresh token is invalid", 403));
+        }
+
+        const user = await User.findById(decoded._id);
+        if (!user) {
+            return next(new ErrorHandler("Refresh token is invalid", 403));
+        }
+
+        await SetCookie(user, res, `Refresh token added.`, 200);;
+    });
 }
 
 export const me = (req, res) => {
@@ -120,7 +161,9 @@ export const me = (req, res) => {
 }
 
 export const logout = (req, res) => {
-    res.status(200).cookie("token", { expires: new Date(Date.now) })
+    res.status(200)
+        .cookie("token", { expires: new Date(Date.now) })
+        .cookie("refreshToken", { expires: new Date(Date.now) })
         .json({
             succse: true,
             user: req.user,

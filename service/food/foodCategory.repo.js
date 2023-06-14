@@ -8,7 +8,6 @@ export default class FoodCategoryRepository {
 
     async SaveFoodCategory(foodCategory, req) {
         try {
-            console.log(req);
             foodCategory.food_category_id = KeyGen.GetKey();
             foodCategory.created_by = req.user.user_id;
             foodCategory.updated_by = req.user.user_id;
@@ -29,15 +28,16 @@ export default class FoodCategoryRepository {
 
     async UpdateFoodCategory(foodCategory, req) {
         try {
-            const updatedCategory = await FoodCategory.findByIdAndUpdate(
-                foodCategory.id,
+            foodCategory.updated_by = req.user.user_id;
+            const updatedCategory = await FoodCategory.findOneAndUpdate(
+                { food_category_id: foodCategory.food_category_id },
                 foodCategory,
                 { new: true }
             );
             if (!updatedCategory) {
                 return {
                     success: false,
-                    message: `Food category with id ${foodCategory.id} not found`,
+                    message: `Food category with id ${foodCategory.food_category_id} not found`,
                 };
             }
             return {
@@ -52,7 +52,7 @@ export default class FoodCategoryRepository {
 
     async DeleteFoodCategory(id, req) {
         try {
-            const deletedCategory = await FoodCategory.findByIdAndDelete(id);
+            const deletedCategory = await FoodCategory.findOneAndDelete({ food_category_id: id });
             if (!deletedCategory) {
                 return {
                     success: false,
