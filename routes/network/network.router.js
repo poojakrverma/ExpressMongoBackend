@@ -4,16 +4,22 @@ const router = express.Router();
 
 router.get('/GetLocalIpAddress', (req, res) => {
     const remoteIpAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    const localIpAdress = req.ip;
-    const localAddress = req.connection.localAddress;
+    const clientIpAddress = req.ip;
+    const serverIpAddress = req.connection.localAddress;
     const address = req.connection.address();
     //const remoteIpAddress = req.connection.remoteAddress;
-    console.log('local ip address : ' + localIpAdress);
-    console.log('remote ip address : ' + remoteIpAddress)
+    console.log('clientIpAddress : ' + clientIpAddress);
+    console.log('remote ip address : ' + remoteIpAddress);
+    console.log('serverIpAddress :' + serverIpAddress);
     res.send({
-        "local Ip Address": localIpAdress,
-        "remote Ip Address": remoteIpAddress
+        "clientIpAddress": clientIpAddress,
+        "remote Ip Address": remoteIpAddress,
+        "serverIpAddress": serverIpAddress
     })
+})
+
+router.get('/GetServerDetails', (req, res) => {
+
 })
 
 
