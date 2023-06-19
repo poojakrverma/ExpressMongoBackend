@@ -9,7 +9,7 @@ router.post('/SaveFooodCategory', isAuthenticated, Create);
 
 router.post('/UpdateFooodCategory', isAuthenticated, Update);
 
-router.delete('/DeleteFoodCategory', isAuthenticated, Delete);
+router.delete('/DeleteFoodCategory/:id', isAuthenticated, Delete);
 
 router.get('/GetFoodCategroryById/:id', GetById);
 

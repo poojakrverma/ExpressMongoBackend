@@ -1,4 +1,5 @@
 export default class KeyGen {
+    // Generates a unique key based on the current UTC date and time
     static GetKey() {
         const date = new Date();
         const key = date.getUTCFullYear().toString() +

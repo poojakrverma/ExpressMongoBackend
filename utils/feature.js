@@ -1,65 +1,42 @@
 import Jwt from 'jsonwebtoken';
-import { setData, getData } from './redis.js';
-// import redis from 'redis'
-
-
-// const redisClient = redis.createClient('rediss://red-chgkj4m7avjbbjrbeh5g:SCAt6uHZ6ynGhl5h2eQ19UYVPASGwz4w@singapore-redis.render.com:6379');
-
-// redisClient.on('connect', () => {
-//     console.log('Connected to Redis');
-// });
-
-// redisClient.on('error', (err) => {
-//     console.error('Redis error:', err);
-// });
+import { User } from '../models/user.js';
+import KeyGen from './key.js';
 
 const refreshTokens = [];
 
-// const setToken = async (key, value, expiration) => {
-//     try {
-//         const dd = await redisClient.get("refreshToken");
-//         console.log(dd);
-
-//         const result = await redisClient.set(key, value, 'EX', expiration);
-//         console.log(result);
-//     } catch (error) {
-//         console.log(error);
-//     }
-// };
-
-
+/*
+Set the cookie in Browser
+*/
 export const SetCookie = async (user, res, message, statusCode = 200) => {
+    const currentTime = new Date();
+    var jwt_id = KeyGen.GetKey();
+    var refresh_token_expire_at = currentTime.getTime() + 3 * 60 * 60 * 1000;
+    var jwt_token_expire_at = currentTime.getTime() + 1 * 60 * 60 * 1000
+    const token = Jwt.sign(
+        { _id: user._id },
+        process.env.JWT_SECRET,
+        {
+            jwtid: jwt_id,
+            expiresIn: jwt_token_expire_at
+        }
+    );
 
-    const token = Jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-
-    const refreshToken = Jwt.sign({ _id: user._id }, process.env.REFRESH_SECRET);
-    // if (redisClient.connect) {
-    //     console.log("on");
-    //     setToken('refreshToken', refreshToken, 5 * 15 * 60 * 100);
-    // } else {
-    //     console.log('Redis client is closed');
-    // }
-    //await setValue('refreshToken', refreshToken, 5 * 15 * 60 * 100);
-    // Storing data in Redis
-    setData('refreshToken', refreshToken, 5 * 15 * 60 * 100, (result) => {
-        console.log('Data stored in Redis:', result);
-    });
-    getData('refreshToken', (result) => {
-        console.log('Data retrieved from Redis:', result);
-    });
-
-    refreshTokens.push(refreshToken);
-
+    const refreshToken = Jwt.sign({ _id: user._id }, process.env.REFRESH_SECRET, { expiresIn: refresh_token_expire_at });
+    user.jwt_token = token;
+    user.jwt_id = jwt_id;
+    user.refresh_token = refreshToken;
+    user.refresh_token_expire_at = refresh_token_expire_at;
+    await User.findByIdAndUpdate(user._id, user)
     res.status(statusCode)
         .cookie("token", token, {
             httpOnly: true,
-            maxAge: 50 * 15 * 60 * 100,
+            maxAge: 1 * 60 * 60 * 1000,
             sameSite: process.env.NODE_ENV === "Development" ? "lax" : "none",
             secure: process.env.NODE_ENV === "Development" ? false : true
         })
         .cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            maxAge: 50 * 5 * 15 * 60 * 100,
+            maxAge: 3 * 60 * 60 * 1000,
             sameSite: process.env.NODE_ENV === "Development" ? "lax" : "none",
             secure: process.env.NODE_ENV === "Development" ? false : true
         })

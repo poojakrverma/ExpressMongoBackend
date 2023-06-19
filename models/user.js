@@ -25,6 +25,22 @@ const schema = new mongoose.Schema({
         select: false,
         require: true,
     },
+    jwt_id: {
+        type: String,
+        select: true
+    },
+    jwt_token: {
+        type: String,
+        select: true
+    },
+    refresh_token: {
+        type: String,
+        select: true
+    },
+    refresh_token_expire_at: {
+        type: Date,
+        select: true
+    },
     is_active: {
         type: Boolean,
         default: false

@@ -5,9 +5,6 @@ import areaRouter from './routes/comman/area.js'
 import foodCategoryRouter from './routes/food/foodCategory.router.js'
 import foodDetailsRouter from './routes/food/foodDetails.router.js'
 import { config } from 'dotenv'
-// import swaggerJSDoc from 'swagger-jsdoc';
-// import swaggerUi from 'swagger-ui-express';
-// import options from './utils/swagger.js';
 import cookieParser from 'cookie-parser';
 import { errorMiddleware } from './middlewares/error.js';
 import cors from 'cors';
@@ -21,12 +18,8 @@ config({
 
 // using json middleware
 app.use(express.json())
-
 app.use(cookieParser());
-
-app.use(
-  cors()
-);
+app.use(cors());
 
 // app.get('*', checkUser); // apply in every routes
 app.use("/api/v1/connection", networkRouter)
@@ -41,11 +34,3 @@ app.get('/', (req, res) => {
 
 // using error middleware
 app.use(errorMiddleware);
-
-// const specs = swaggerJSDoc(options);
-
-// app.use(
-//     "/api-docs",
-//     swaggerUi.serve,
-//     swaggerUi.setup(specs)
-// )

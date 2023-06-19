@@ -4,9 +4,6 @@ import { SetCookie } from "../utils/feature.js";
 import ErrorHandler from "../middlewares/error.js";
 import KeyGen from "../utils/key.js";
 import Jwt from 'jsonwebtoken';
-import redis from 'redis'
-
-const client = redis.createClient(process.env.EXTERNAL_REDISH_URL);
 
 
 export const getAllUsers = async (req, res, next) => {
@@ -14,7 +11,7 @@ export const getAllUsers = async (req, res, next) => {
         const users = await User.find()
         res.json({
             succse: true,
-            users
+            data:users
         })
     } catch (error) {
         next(error)
@@ -27,8 +24,8 @@ export const getUser = async (req, res, next) => {
         console.log(id);
         const users = await User.findById(id);
         res.json({
-            succse: true,
-            users
+            success: true,
+            data: users
         })
     } catch (error) {
         next(error);
@@ -42,7 +39,7 @@ export const deleteUser = async (req, res, next) => {
         await User.findByIdAndDelete(id);
         res.json({
             succse: true,
-            message: "deleted"
+            message: "user deleted successfully"
         })
     } catch (error) {
         next(error);
@@ -69,13 +66,14 @@ export const createUser = async (req, res, next) => {
 
 export const register = async (req, res, next) => {
     try {
+        debugger
         const { role_id, name, email, password } = req.body;
 
         let user = await User.findOne({ role_id: role_id, email: email });
 
         if (user) {
             return res.status(500).json({
-                succse: false,
+                success: false,
                 message: "user already available with this email id : " + email
             });
         }
@@ -87,7 +85,11 @@ export const register = async (req, res, next) => {
             name: name,
             email: email,
             password: hashPassword,
-            is_active: true
+            is_active: true,
+            jwt_id: null,
+            jwt_token: null,
+            refresh_token: null,
+            refresh_token_expire_at: null
         });
 
         SetCookie(user, res, "registered successfully", 201);
@@ -120,25 +122,16 @@ export const login = async (req, res, next) => {
 
 export const RefreshToken = async (req, res, next) => {
     // const { refreshToken } = req.body;
-    const { refreshToken } = req.cookies;
-    if (!refreshToken) {
+    const cookies = req.cookies;
+    console.log(cookies);
+    if (!cookies) {
         return next(new ErrorHandler("Refresh token is required", 401));
     }
-
-    client.get("refreshToken", (err, value) => {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            console.log(value);
-        }
-    })
-
-    // if (!refreshTokens.includes(refreshToken)) {
+    // if (!cookies.includes(refreshToken)) {
     //     return next(new ErrorHandler("Refresh token is invalid", 403));
     // }
 
-    Jwt.verify(refreshToken, process.env.REFRESH_SECRET, async (err, decoded) => {
+    Jwt.verify(cookies.refreshToken, process.env.REFRESH_SECRET, async (err, decoded) => {
         if (err) {
             return next(new ErrorHandler("Refresh token is invalid", 403));
         }
@@ -165,7 +158,7 @@ export const logout = (req, res) => {
         .cookie("token", { expires: new Date(Date.now) })
         .cookie("refreshToken", { expires: new Date(Date.now) })
         .json({
-            succse: true,
+            success: true,
             user: req.user,
         });
 }

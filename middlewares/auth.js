@@ -1,9 +1,5 @@
 import { User } from "../models/user.js";
 import Jwt from "jsonwebtoken";
-import redis from 'redis'
-
-
-const client = redis.createClient(process.env.EXTERNAL_REDISH_URL);
 
 
 // Authenticate the user
@@ -18,7 +14,7 @@ export const isAuthenticated = async (req, res, next) => {
         })
     }
 
-    Jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
+    Jwt.verify(token.toString(), process.env.JWT_SECRET, async (err, decodedToken) => {
         if (err) {
             console.log(err);
             return res.status(403).json({
