@@ -1,6 +1,6 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, model } from 'mongoose';
 
-const orderCancellationSchema = new Schema({
+const orderCancellationSchema = new mongoose.Schema({
   order_cancellation_id: {
     type: String,
     required: true,

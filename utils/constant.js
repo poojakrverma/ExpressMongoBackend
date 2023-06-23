@@ -1,5 +1,5 @@
 // enums
-const OrderStatus = {
+export const OrderStatus = {
     Placed: 1,
     Confirmed: 2,
     Cooked: 3,
@@ -7,7 +7,7 @@ const OrderStatus = {
     Cancelled: 5
 };
 
-const UserType = {
+export const UserType = {
     Developer: 1,
     Admin: 2,
     Restraunt: 3,
@@ -15,7 +15,7 @@ const UserType = {
     DeliveryExecutive: 5
 };
 
-const Rating = {
+export const Rating = {
     OneStar: 1,
     TwoStar: 2,
     ThreeStar: 3,

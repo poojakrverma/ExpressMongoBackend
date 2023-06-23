@@ -1,5 +1,4 @@
-import { default as mongoose } from "mongoose";
-
+import mongoose, { Schema, model } from "mongoose";
 const RestrauntPhotoSchema = new mongoose.Schema({
     restraunt_photo_id: {
         type: String,
@@ -98,20 +97,18 @@ const RestrauntMasterSchema = new mongoose.Schema({
     updated_by: {
         type: String
     },
-    restraunt_photos: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'RestrauntPhoto'
-    }],
+    restraunt_photos: {
+        type: [RestrauntPhotoSchema],
+    },
     json_restraunt_photo: {
         type: String,
         select: false
     }
 });
 
-const RestrauntPhoto = mongoose.model('RestrauntPhoto', RestrauntPhotoSchema);
-const RestrauntMaster = mongoose.model('RestrauntMaster', RestrauntMasterSchema);
-
-export default {
-    RestrauntPhoto,
-    RestrauntMaster
-};
+//const RestrauntPhoto = model('RestrauntPhoto', RestrauntPhotoSchema);
+export const RestrauntMaster = model('RestrauntMaster', RestrauntMasterSchema);
+// export default {
+//     RestrauntPhoto,
+//     RestrauntMaster
+// };

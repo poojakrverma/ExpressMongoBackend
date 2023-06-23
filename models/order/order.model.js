@@ -1,6 +1,6 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema, model } from "mongoose";
 
-const OrderItemsSchema = new Schema({
+const OrderItemsSchema = new mongoose.Schema({
   order_item_id: {
     type: String,
     required: true,
@@ -45,7 +45,7 @@ const OrderItemsSchema = new Schema({
   },
 });
 
-const OrdersSchema = new Schema({
+const OrdersSchema = new mongoose.Schema({
   order_id: {
     type: String,
     required: true,
@@ -107,4 +107,5 @@ const OrdersSchema = new Schema({
   },
 });
 
-export default model('Orders', OrdersSchema);
+export const Orders = model('Orders', OrdersSchema);
+export const OrderItems = model('OrderItems', OrderItemsSchema);

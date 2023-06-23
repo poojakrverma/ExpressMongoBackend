@@ -2,7 +2,14 @@ import { User } from "../models/user.js";
 import Jwt from "jsonwebtoken";
 
 
-// Authenticate the user
+/**
+ * @description This method is used to authenticate the user
+ * and store the user details in the request.
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ * @author Purushuttam Kumar
+ */
 export const isAuthenticated = async (req, res, next) => {
 
     const { token } = req.cookies;
@@ -10,7 +17,7 @@ export const isAuthenticated = async (req, res, next) => {
     if (!token) {
         return res.status(401).json({
             succse: false,
-            message: "login first"
+            message: 'login first'
         })
     }
 
@@ -19,13 +26,22 @@ export const isAuthenticated = async (req, res, next) => {
             console.log(err);
             return res.status(403).json({
                 succse: false,
-                message: "Access token is invalid"
+                message: 'Access token is invalid'
             })
         }
         else {
             // console.log(decodedToken);
-            req.user = await User.findById(decodedToken._id);
-            next();
+            const user = await User.findById(decodedToken._id);
+            if (user) {
+                // store the user details in request.
+                req.user = user;
+                next();
+            } else {
+                return res.status(401).json({
+                    success: false,
+                    message: 'User not found or invalid user id'
+                })
+            }
         }
     })
 }
@@ -58,6 +74,7 @@ export const checkUser = async (req, res, next) => {
             } else {
                 let user = await User.findById(decodedToken.id);
                 res.locals.user = user;
+                console.log(user);
                 next();
             }
         });

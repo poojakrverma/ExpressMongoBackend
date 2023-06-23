@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose, { Schema, model } from 'mongoose';
 
 const paymentAPISchema = new mongoose.Schema({
   payment_api_id: {

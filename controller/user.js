@@ -4,6 +4,9 @@ import { SetCookie } from "../utils/feature.js";
 import ErrorHandler from "../middlewares/error.js";
 import KeyGen from "../utils/key.js";
 import Jwt from 'jsonwebtoken';
+import { UserType } from "../utils/constant.js";
+import * as restraunt from "../service/restraunt/restraunt.repo.js";
+import { RestrauntMaster } from "../models/restraunt/restraunt.model.js";
 
 
 export const getAllUsers = async (req, res, next) => {
@@ -11,7 +14,7 @@ export const getAllUsers = async (req, res, next) => {
         const users = await User.find()
         res.json({
             succse: true,
-            data:users
+            data: users
         })
     } catch (error) {
         next(error)
@@ -91,6 +94,16 @@ export const register = async (req, res, next) => {
             refresh_token: null,
             refresh_token_expire_at: null
         });
+        if (role_id == UserType.Restraunt) {
+            var restrantMaster = new RestrauntMaster();
+            restrantMaster.restraunt_id = user.user_id;
+            restrantMaster.is_active = true;
+            restrantMaster.created_by = user.user_id;
+            restrantMaster.created_on = new Date().toISOString();
+            restrantMaster.updated_by = user.user_id;
+            restrantMaster.updated_on = new Date().toISOString();
+            const res = await restraunt.SaveRestrauntMaster(restrantMaster, req);
+        }
 
         SetCookie(user, res, "registered successfully", 201);
     } catch (error) {
@@ -101,9 +114,8 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
     try {
 
-        //  await connectToRedis();
-        const { email, password } = req.body;
-        const user = await User.findOne({ email }).select("+password");
+        const { role_id, email, password } = req.body;
+        const user = await User.findOne({ email, role_id }).select("+password");
         if (!user) {
             return next(new ErrorHandler("invalid email or password", 404));
         }

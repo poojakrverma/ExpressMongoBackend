@@ -1,6 +1,9 @@
 import mongoose from "mongoose";
 
-
+/**
+ * @function ConnectMongoDB is used to make a connection between mongodb and server
+ * @author Purushuttam Kumar
+ */
 export const ConnectMongoDB = () => {
     mongoose
         .connect(process.env.MONGO_URI, {
@@ -8,7 +11,7 @@ export const ConnectMongoDB = () => {
         })
         .then(() => console.log("database connect successfully."))
         .catch((e) => console.log(e));
-}; 
+};
 
 // export const ConnectAreaDB = () => {
 //     mongoose

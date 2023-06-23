@@ -1,7 +1,6 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose, { Schema, model } from 'mongoose';
 
-const paymentDetailsSchema = new Schema({
+const paymentDetailsSchema = new mongoose.Schema({
   payment_detail_id: { type: String, required: true },
   payment_api_id: { type: String, required: true },
   payment_link_id: { type: String, required: true },
@@ -15,4 +14,4 @@ const paymentDetailsSchema = new Schema({
   updated_on: { type: Date, required: true }
 });
 
-export const PaymentDetails = mongoose.model('PaymentDetails', paymentDetailsSchema);
+export const PaymentDetails = model('PaymentDetails', paymentDetailsSchema);

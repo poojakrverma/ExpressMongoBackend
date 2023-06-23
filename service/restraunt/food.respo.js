@@ -1,4 +1,4 @@
-import FoodDetails from './../../models/food/foodDetails.model.js';
+import { FoodDetails } from './../../models/food/foodDetails.model.js';
 
 class FoodDetailRepository {
     async SaveFoodDetails(foodDetails) {
@@ -8,7 +8,7 @@ class FoodDetailRepository {
     }
 
     async UpdateFoodDetails(foodDetails) {
-        const updatedFoodDetails = await findByIdAndUpdate(foodDetails._id, foodDetails, { new: true });
+        const updatedFoodDetails = await FoodDetails.findByIdAndUpdate(foodDetails._id, foodDetails, { new: true });
         if (!updatedFoodDetails) {
             return { success: false, message: `Food details with id ${foodDetails._id} not found` };
         }
@@ -16,7 +16,7 @@ class FoodDetailRepository {
     }
 
     async DeleteFoodDetails(foodDetailId) {
-        const deletedFoodDetails = await findByIdAndDelete(foodDetailId);
+        const deletedFoodDetails = await FoodDetails.findByIdAndDelete(foodDetailId);
         if (!deletedFoodDetails) {
             return { success: false, message: `Food details with id ${foodDetailId} not found` };
         }
@@ -25,7 +25,7 @@ class FoodDetailRepository {
 
     async UpdateStatus(status) {
         const { foodDetailId, status: newStatus } = status;
-        const updatedFoodDetails = await findByIdAndUpdate(foodDetailId, { status: newStatus }, { new: true });
+        const updatedFoodDetails = await FoodDetails.findByIdAndUpdate(foodDetailId, { status: newStatus }, { new: true });
         if (!updatedFoodDetails) {
             return { success: false, message: `Food details with id ${foodDetailId} not found` };
         }
@@ -33,12 +33,12 @@ class FoodDetailRepository {
     }
 
     async GetAllFoodDetails() {
-        const foodDetails = await find();
+        const foodDetails = await FoodDetails.find();
         return { success: true, data: foodDetails };
     }
 
     async GetFoodDetail(Id) {
-        const foodDetail = await findById(Id);
+        const foodDetail = await FoodDetails.findById(Id);
         if (!foodDetail) {
             return { success: false, message: `Food details with id ${Id} not found` };
         }

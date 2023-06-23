@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, model } from 'mongoose';
 
 const cartItemsSchema = new mongoose.Schema({
   food_detail_id: {
@@ -43,8 +43,7 @@ const cartSchema = new mongoose.Schema({
   },
   food_details: {
     type: [cartItemsSchema],
-    required: false,
-    default: undefined,
+    required: false
   },
   total_amount: {
     type: Number,

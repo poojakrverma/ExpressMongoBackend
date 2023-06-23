@@ -4,9 +4,14 @@ import KeyGen from './key.js';
 
 const refreshTokens = [];
 
-/*
-Set the cookie in Browser
-*/
+/**
+ * @description this method is used to set the jwt token and refresh in cookies
+ * @param {*} user user object
+ * @param {*} res response object
+ * @param {*} message message which is passed in response object
+ * @param {*} statusCode status code for response.
+ * @author Purushuttam Kumar
+ */
 export const SetCookie = async (user, res, message, statusCode = 200) => {
     const currentTime = new Date();
     var jwt_id = KeyGen.GetKey();

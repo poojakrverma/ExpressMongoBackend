@@ -1,7 +1,4 @@
-import FoodCategoryRepository from './../../service/food/foodCategory.repo.js';
-
-// initialize the class repo of food category.
-const _FoodCategoryRepository = new FoodCategoryRepository();
+import * as _FoodCategoryRepository from './../../service/food/foodCategory.repo.js';
 
 export const Create = async (req, res) => {
     try {
