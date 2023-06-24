@@ -50,7 +50,7 @@ export const sendEmailVerificationMail = async (dtoEmail) => {
         const emailObj = {
             verificationLink: 'https://dashboard.render.com/web/srv-chbpkiu7avjcvo7epv5g/deploys/dep-cibdf2t9aq04o4ui5nf0'
         };
-        const htmlTemplate = await loadEmailViews('emailverification', emailObj);
+        const htmlTemplate = await loadEmailViews('emailVerification', emailObj);
         const resp = await sendEmail({
             "toEmailId": dtoEmail.toEmailId,
             "subject": dtoEmail.subject,
