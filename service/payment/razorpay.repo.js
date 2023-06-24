@@ -2,16 +2,18 @@ import { PaymentAPI } from "../../models/payment/paymentAPI.model.js";
 import { PaymentDetails } from "../../models/payment/paymentDetails.model.js";
 import KeyGen from "../../utils/key.js";
 import * as _payment from "./payment.repo.js";
+import * as _cart from "../order/cart.repo.js"
 import Razorpay from 'razorpay';
+import fetch from 'node-fetch';
 
 
 export async function GetRazorPayPaymentLink(cart, req) {
-    const response = await _cart.AddToCart(cart);
-    if (!response.resp) {
-        return null;
+    const response = await _cart.addToCart(cart, req);
+    if (!response.status) {
+        return response;
     }
 
-    const apiDetails = await PaymentAPI.findOne({ payment_api_id: "2302251837217803911" });
+    const apiDetails = await PaymentAPI.findOne({ _id: "649748bfee035e3bcce4e49a" });
     const options = {
         amount: cart.total_amount * 100, // Amount in paise
         currency: "INR",
@@ -22,7 +24,7 @@ export async function GetRazorPayPaymentLink(cart, req) {
         customer: {
             name: "Purushuttam Kumar",
             contact: "+918210272811",
-            email: Email
+            email: req.user.email
         },
         notify: {
             sms: true,
@@ -30,7 +32,7 @@ export async function GetRazorPayPaymentLink(cart, req) {
         },
         reminder_enable: true,
         notes: {
-            policy_name: "Test Restraunt"
+            policy_name: "Test Express Mongodb Backend API"
         },
         callback_url: "http://localhost:4200/details/restraunt-food/order-Confirmation",
         callback_method: "get"
@@ -42,30 +44,50 @@ export async function GetRazorPayPaymentLink(cart, req) {
     const encodedAuthInfo = Buffer.from(authInfo).toString("base64");
 
     const headers = {
-        "Authorization": "Basic " + encodedAuthInfo,
-        "Content-Type": "application/json"
+        Authorization: `Basic ${encodedAuthInfo}`,
+        'Content-Type': 'application/json',
     };
 
     const requestOptions = {
-        method: "POST",
+        method: 'POST',
         headers: headers,
-        body: jsonData
+        body: jsonData,
     };
 
-    const paymentLinkResponse = await fetch(apiDetails.payment_url + "payment_links", requestOptions);
-    const responseData = await paymentLinkResponse.json();
-    const rrr = JSON.parse(responseData);
+    try {
+        const paymentLinkResponse = await fetch(apiDetails.payment_url + 'payment_links', requestOptions);
+        const responseData = await paymentLinkResponse.json();
 
-    const resp = await this._payment.SavePaymentDetails(rrr, cart, apiDetails.payment_api_id);
+        const resp = await _payment.SavePaymentDetails(responseData, cart, apiDetails._id, req);
+        console.log(resp);
+        if (resp.status) {
+            return {
+                status: true,
+                message: "created payment link",
+                data: responseData
+            };
+        }
 
-    return rrr;
+        return {
+            status: false,
+            message: "Something went wrong",
+            data: resp.data
+        };
+    } catch (error) {
+        console.log(error);
+        return {
+            status: false,
+            message: error
+        }
+    }
 }
 
 export async function FetchRazorPayPaymentInformation(paymentRzPay, req) {
+
+    const response = { status: false, message: '', data: null }
     try {
         const paymentDetails = await PaymentDetails.findOne({ order_id: paymentRzPay.session_id });
-        const apiDetails = await PaymentAPI.findOne({ payment_api_id: "2302251837217803911" });
-
+        const apiDetails = await PaymentAPI.findOne({ _id: "649748bfee035e3bcce4e49a" });
         const client = new Razorpay({
             key_id: apiDetails.payment_api_key,
             key_secret: apiDetails.payment_api_secret_key,
@@ -80,21 +102,20 @@ export async function FetchRazorPayPaymentInformation(paymentRzPay, req) {
         console.log("Amount: " + amount);
         console.log("Status: " + status);
 
-        const response = new Response();
         if (status === "captured") {
             response.status = true;
             response.message = "Payment Successful";
             response.data = payment;
         } else {
             response.status = false;
+            response.message = "Payment not successfull"
         }
 
         return response;
     } catch (error) {
         console.error(error);
-        // Handle the error
-        const response = new Response();
         response.status = false;
+        response.data = error;
         return response;
     }
 }

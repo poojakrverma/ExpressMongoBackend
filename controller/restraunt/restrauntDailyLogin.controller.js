@@ -31,7 +31,7 @@ export const OfflineRestraunt = async (req, res) => {
 
 export const OnlineRestraunt = async (req, res) => {
     try {
-        const result = await _restrauntDailyLoginRepo.OnlineRestraunt(req);
+        const result = await _restrauntDailyLoginRepo.OnlineRestraunt(req.body, req);
         return res.status(200).json(result);
     } catch (error) {
         return res.status(500).json({ success: false, message: error });

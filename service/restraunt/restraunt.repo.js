@@ -184,11 +184,10 @@ export async function SaveRestrauntMaster(restraunt, req) {
             message: '',
             data: null
         };
-        restraunt.restraunt_id = req.user.user_id;
         restraunt.is_active = true;
-        restraunt.created_by = req.user.user_id;
+        restraunt.created_by = req.user._id;
         restraunt.created_on = new Date().toISOString();
-        restraunt.updated_by = req.user.user_id;
+        restraunt.updated_by = req.user._id;
         restraunt.updated_on = new Date().toISOString();
 
         const savedRestraunt = await RestrauntMaster.create(restraunt);

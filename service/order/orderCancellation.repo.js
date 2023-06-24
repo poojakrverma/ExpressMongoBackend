@@ -1,5 +1,5 @@
 import { Orders } from "../../models/order/order.model.js";
-import OrderCancellation from "../../models/order/orderCancellation.model.js";
+import { OrderCancellation } from "../../models/order/orderCancellation.model.js";
 import * as _restrauntDailyLogin from "../restraunt/restrauntDailyLogin.repo.js";
 
 export async function getAllOrderCancellationByRestrauntId(req) {
@@ -51,12 +51,14 @@ export async function saveOrderCancellation(orderCancellation, req) {
             return response;
         }
 
-        orderCancellation.order_cancellation_id = KeyGen.getKey();
         orderCancellation.cancellation_time = new Date();
         orderCancellation.user_id = LoggedInUser;
 
-        await OrderCancellation.create(orderCancellation);
-
+        const resp = await OrderCancellation.create(orderCancellation);
+        if (!resp) {
+            response.message = 'Error while cancelling the order';
+            return response;
+        }
         const objOrders = await Orders.findOne({ order_id: orderCancellation.order_id });
         const objRestraunt = await _restrauntDailyLogin.UpdateCancelledOrder(objOrders, req);
 
@@ -67,7 +69,7 @@ export async function saveOrderCancellation(orderCancellation, req) {
 
         response.status = true;
         response.message = 'Order cancellation saved successfully';
-        response.data = orderCancellation;
+        response.data = resp;
         return response;
     } catch (error) {
         response.message = error.message;

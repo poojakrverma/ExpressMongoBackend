@@ -1,13 +1,8 @@
 import mongoose, { Schema, model } from "mongoose";
 const RestrauntPhotoSchema = new mongoose.Schema({
     restraunt_photo_id: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    restraunt_id: {
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        alias: '_id' // Map 'restraunt_photo_id' field to '_id'
     },
     image: {
         type: String,
@@ -35,9 +30,8 @@ const RestrauntPhotoSchema = new mongoose.Schema({
 
 const RestrauntMasterSchema = new mongoose.Schema({
     restraunt_id: {
-        type: String,
-        required: true,
-        unique: true
+        type: mongoose.Schema.Types.ObjectId,
+        alias: '_id' // Map 'restraunt_id' field to '_id'
     },
     restraunt_name: {
         type: String,

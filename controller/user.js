@@ -83,7 +83,6 @@ export const register = async (req, res, next) => {
 
         const hashPassword = await bcrypt.hash(password, 10);
         user = await User.create({
-            user_id: KeyGen.GetKey(),
             role_id: role_id,
             name: name,
             email: email,
@@ -94,15 +93,22 @@ export const register = async (req, res, next) => {
             refresh_token: null,
             refresh_token_expire_at: null
         });
+        if (!user) {
+            return res.status(500).json({
+                success: false,
+                message: 'something went wrong'
+            });
+        }
+        req.user = user;
+        console.log(user);
         if (role_id == UserType.Restraunt) {
             var restrantMaster = new RestrauntMaster();
-            restrantMaster.restraunt_id = user.user_id;
             restrantMaster.is_active = true;
-            restrantMaster.created_by = user.user_id;
+            restrantMaster.created_by = user._id.toString();
             restrantMaster.created_on = new Date().toISOString();
-            restrantMaster.updated_by = user.user_id;
+            restrantMaster.updated_by = user._id.toString();
             restrantMaster.updated_on = new Date().toISOString();
-            const res = await restraunt.SaveRestrauntMaster(restrantMaster, req);
+            //const res = await restraunt.SaveRestrauntMaster(restrantMaster, req);
         }
 
         SetCookie(user, res, "registered successfully", 201);

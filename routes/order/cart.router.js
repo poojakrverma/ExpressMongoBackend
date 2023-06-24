@@ -3,7 +3,7 @@ import { AddToCart, RemoveFromCart, getCartDetails } from "../../controller/orde
 
 const router = express.Router();
 
-router.get('/GetCartDetails', getCartDetails);
+router.get('/GetCartDetails/:session_id', getCartDetails);
 
 router.post('/AddToCart', AddToCart);
 

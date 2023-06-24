@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export default class KeyGen {
     // Generates a unique key based on the current UTC date and time
     static GetKey() {
@@ -13,3 +15,8 @@ export default class KeyGen {
         return key;
     }
 }
+
+
+export const generateUniqueKey = () => {
+    return mongoose.Types.ObjectId();
+};

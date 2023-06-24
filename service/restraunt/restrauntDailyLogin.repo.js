@@ -7,7 +7,7 @@ export async function GetAllTodayOrderDetails(req) {
     try {
         const orderList = Orders.find(
             {
-                restraunt_id: req.user.user_id,
+                restraunt_id: req.user._id,
                 created_on: {
                     $eq: new Date().toISOString().split('T')[0]
                 }
@@ -36,7 +36,7 @@ export async function GetAllTodayOrderDetails(req) {
 
 export async function GetRestrauntStatus(req) {
     try {
-        const restrauntObj = await RestrauntDailyLogin.findOne({ restraunt_id: req.user.user_id });
+        const restrauntObj = await RestrauntDailyLogin.findOne({ restraunt_id: req.user._id });
         if (restrauntObj) {
             return {
                 status: true,
@@ -76,7 +76,7 @@ export async function OfflineRestraunt(restrauntDailyLogin, req) {
             {
                 logout_time: new Date().toISOString(),
                 is_active: false,
-                updated_by: LoggedInUser,
+                updated_by: req.user._id,
                 updated_on: new Date().toISOString(),
             }
         );
@@ -107,7 +107,7 @@ export async function OnlineRestraunt(restrauntDailyLogin, req) {
         }
 
         const objRestrant = await RestrauntDailyLogin.findOne({
-            restraunt_id: LoggedInUser,
+            restraunt_id: req.user._id,
             date: {
                 $eq: new Date().toISOString().split('T')[0]
             }
@@ -115,26 +115,26 @@ export async function OnlineRestraunt(restrauntDailyLogin, req) {
         var resp;
         if (objRestrant) {
             objRestrant.is_active = true;
-            objRestrant.updated_by = LoggedInUser;
+            objRestrant.updated_by = req.user._id;
             objRestrant.updated_on = new Date().toISOString();
             resp = await objRestrant.save();
         } else {
-            restrauntDailyLogin.restraunt_daily_login_id = KeyGen.GetKey();
-            restrauntDailyLogin.restraunt_id = LoggedInUser;
+            restrauntDailyLogin.restraunt_id = req.user._id;
             restrauntDailyLogin.date = new Date().toISOString().split('T')[0];
             restrauntDailyLogin.login_time = new Date().toISOString();
             restrauntDailyLogin.is_active = true;
-            restrauntDailyLogin.created_by = LoggedInUser;
+            restrauntDailyLogin.created_by = req.user._id;
             restrauntDailyLogin.created_on = new Date().toISOString();
-            restrauntDailyLogin.updated_by = LoggedInUser;
+            restrauntDailyLogin.updated_by = req.user._id;
             restrauntDailyLogin.updated_on = new Date().toISOString();
             resp = await RestrauntDailyLogin.create(restrauntDailyLogin);
         }
-        if (resp > 0) {
+
+        if (resp) {
             return {
                 status: true,
                 message: '"Restraunt Login Successfull"',
-                data: objRestrant || restrauntDailyLogin
+                data: resp || restrauntDailyLogin
             }
         } else {
             return {

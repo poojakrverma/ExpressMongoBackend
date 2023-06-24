@@ -2,9 +2,8 @@ import mongoose, { Schema, model } from 'mongoose';
 
 const otpSchema = new mongoose.Schema({
     OtpId: {
-        type: String,
-        required: true,
-        unique: true
+        type: mongoose.Schema.Types.ObjectId,
+        alias: '_id' // Map 'OtpId' field to '_id'
     },
     OTP: {
         type: String,
@@ -48,20 +47,20 @@ const otpSchema = new mongoose.Schema({
     }
 });
 
-const confirmOtpSchema = new mongoose.Schema({
-    OtpId: {
-        type: String,
-        required: true
-    },
-    UserId: {
-        type: String,
-        required: true
-    },
-    OTP: {
-        type: String,
-        required: true
-    }
-});
+// const confirmOtpSchema = new mongoose.Schema({
+//     OtpId: {
+//         type: mongoose.Schema.Types.ObjectId,
+//         alias: '_id' // Map 'OtpId' field to '_id'
+//     },
+//     UserId: {
+//         type: String,
+//         required: true
+//     },
+//     OTP: {
+//         type: String,
+//         required: true
+//     }
+// });
 
 export const OTP = model('OtpDto', otpSchema);
-export const ConfirmOTP = model('ConfirmOTP', confirmOtpSchema);
+// export const ConfirmOTP = model('ConfirmOTP', confirmOtpSchema);

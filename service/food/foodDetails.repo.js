@@ -12,9 +12,8 @@ export async function SaveFoodDetails(foodDetails, req) {
             }
         }
 
-        foodDetails.food_detail_id = KeyGen.GetKey();
-        foodDetails.created_by = req.user.user_id;
-        foodDetails.updated_by = req.user.user_id;
+        foodDetails.created_by = req.user._id;
+        foodDetails.updated_by = req.user._id;
         const newFoodDetails = new FoodDetails(foodDetails);
         const resp = await newFoodDetails.save();
         if (resp) {
@@ -32,7 +31,7 @@ export async function SaveFoodDetails(foodDetails, req) {
     } catch (error) {
         return {
             status: false,
-            message: Message.NotSaved
+            message: error
         }
     }
 }
@@ -44,10 +43,10 @@ export async function UpdateFoodDetails(foodDetails, req) {
             message: Message.InvalidData
         }
     }
-    console.log(req.user_id);
-    foodDetails.updated_by = req.user_id;
+    console.log(req.user._id);
+    foodDetails.updated_by = req.user._id;
     var res = await FoodDetails.findOneAndUpdate(
-        { food_detail_id: foodDetails.food_detail_id },
+        { _id: foodDetails._id },
         foodDetails,
         { upsert: true }
     )
@@ -76,7 +75,7 @@ export async function GetAllFoodDetails(req) {
 
 export async function GetFoodDetailsById(food_detail_id) {
     try {
-        var foodDetailsObj = await FoodDetails.findOne({ food_detail_id: food_detail_id })
+        var foodDetailsObj = await FoodDetails.findOne({ _id: food_detail_id })
         if (foodDetailsObj) {
             return {
                 status: true,
@@ -100,20 +99,18 @@ export async function GetFoodDetailsById(food_detail_id) {
 export async function UpdateFoodDetailStatus(updateStatus, req) {
     try {
         const FoodDetailObj = await FoodDetails.findOneAndUpdate(
-            { food_detail_id: updateStatus.Id },
+            { _id: updateStatus.Id },
             { is_active: updateStatus.Status }
         );
         if (FoodDetailObj) {
             return {
                 status: true,
-                message: Message.Updated,
-                data: FoodDetailObj
+                message: Message.Updated
             }
         } else {
             return {
                 status: false,
-                message: Message.NotUpdated,
-                data: null
+                message: Message.NotUpdated
             }
         }
     } catch (error) {
@@ -126,12 +123,12 @@ export async function UpdateFoodDetailStatus(updateStatus, req) {
 
 export async function GetAllFoodDetailsByRestrauntId(req) {
     try {
-        const FoodDetailsList = await FoodDetails.find({ reastraunt_id: req.user.user_id });
+        const FoodDetailsList = await FoodDetails.find({ reastraunt_id: req.user._id });
         for (let i = 0; i < FoodDetailsList.length; i++) {
-            const foodCategoryObj = await FoodCategory.findOne({ food_category_id: FoodDetailsList[i].food_category_id });
-            if (foodCategoryObj) {
-                FoodDetailsList[i].food_category_id = foodCategoryObj.food_category_name;
-            }
+            // const foodCategoryObj = await FoodCategory.findOne({ _id: FoodDetailsList[i].food_category_id });
+            // if (foodCategoryObj) {
+            //     FoodDetailsList[i].food_category_id = foodCategoryObj.food_category_name;
+            // }
         }
         if (FoodDetailsList.length > 0) {
             return {

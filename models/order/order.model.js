@@ -1,17 +1,17 @@
 import mongoose, { Schema, model } from "mongoose";
+import { FoodCategory } from "../food/foodCategory.model.js";
+import { CustomerMaster } from "../customer/cutomerMaster.model.js";
+import { RestrauntMaster } from "../restraunt/restraunt.model.js";
 
 const OrderItemsSchema = new mongoose.Schema({
   order_item_id: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  order_id: {
-    type: String,
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    alias: '_id' // Map 'order_item_id' field to '_id'
   },
   food_category_id: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: FoodCategory, // Name of the referenced collection
+    required: true,
   },
   order_item_name: {
     type: String,
@@ -47,15 +47,18 @@ const OrderItemsSchema = new mongoose.Schema({
 
 const OrdersSchema = new mongoose.Schema({
   order_id: {
-    type: String,
-    required: true,
-    unique: true,
+    type: mongoose.Schema.Types.ObjectId,
+    alias: '_id', // Map 'order_id' field to '_id' 
   },
   customer_id: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: CustomerMaster, // Name of the referenced collection
+    required: true,
   },
   restraunt_id: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: RestrauntMaster, // Name of the referenced collection
+    required: true,
   },
   order_details: {
     type: String,
@@ -113,4 +116,4 @@ const OrdersSchema = new mongoose.Schema({
 });
 
 export const Orders = model('Orders', OrdersSchema);
-export const OrderItems = model('OrderItems', OrderItemsSchema);
+// export const OrderItems = model('OrderItems', OrderItemsSchema);

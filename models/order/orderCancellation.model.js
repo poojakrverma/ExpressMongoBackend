@@ -1,14 +1,15 @@
 import mongoose, { Schema, model } from 'mongoose';
+import { Orders } from './order.model.js';
 
 const orderCancellationSchema = new mongoose.Schema({
   order_cancellation_id: {
-    type: String,
-    required: true,
-    unique: true
+    type: mongoose.Schema.Types.ObjectId,
+    alias: '_id' // Map 'order_cancellation_id' field to '_id'
   },
   order_id: {
-    type: String,
-    required: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Orders, // Name of the referenced collection
+    required: true,
   },
   cancellation_by: {
     type: Number,
@@ -36,6 +37,5 @@ const orderCancellationSchema = new mongoose.Schema({
   }
 });
 
-const OrderCancellation = model('OrderCancellation', orderCancellationSchema);
+export const OrderCancellation = model('OrderCancellation', orderCancellationSchema);
 
-export default OrderCancellation;

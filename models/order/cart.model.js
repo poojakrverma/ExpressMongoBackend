@@ -1,12 +1,14 @@
 import mongoose, { Schema, model } from 'mongoose';
+import { RestrauntMaster } from '../restraunt/restraunt.model.js';
 
 const cartItemsSchema = new mongoose.Schema({
   food_detail_id: {
-    type: String,
-    required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    alias: '_id' // Map 'food_detail_id' field to '_id'
   },
   restraunt_id: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: RestrauntMaster, // Name of the referenced collection
     required: true,
   },
   food_name: {
@@ -37,9 +39,8 @@ const cartItemsSchema = new mongoose.Schema({
 
 const cartSchema = new mongoose.Schema({
   session_id: {
-    type: String,
-    required: true,
-    unique: true,
+    type: mongoose.Schema.Types.ObjectId,
+    alias: '_id', // Map 'session_id' field to '_id' 
   },
   food_details: {
     type: [cartItemsSchema],
@@ -49,10 +50,6 @@ const cartSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 0,
-  },
-  json_food_details: {
-    type: String,
-    required: true,
   },
   is_active: {
     type: Boolean,
@@ -78,13 +75,11 @@ const cartSchema = new mongoose.Schema({
   },
   address: {
     type: String,
-    required: true,
   },
   mobile: {
     type: String,
-    required: true,
   },
 });
 
 export const Cart = mongoose.model("Cart", cartSchema);
-export const CartItems = mongoose.model("CartItems", cartItemsSchema);
+// export const CartItems = mongoose.model("CartItems", cartItemsSchema);

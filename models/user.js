@@ -2,9 +2,8 @@ import mongoose from "mongoose";
 
 const schema = new mongoose.Schema({
     user_id: {
-        type: String,
-        unique: true,
-        required: true
+        type: mongoose.Schema.Types.ObjectId,
+        alias: '_id' // Map 'userId' field to '_id'
     },
     role_id: {
         type: Number,

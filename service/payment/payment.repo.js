@@ -1,4 +1,5 @@
 import { PaymentDetails } from "../../models/payment/paymentDetails.model.js";
+import { Message } from "../../utils/constant.js";
 import KeyGen from "../../utils/key.js";
 
 export async function SavePaymentDetails(razorPayRs, cart, api_id, req) {
@@ -10,23 +11,21 @@ export async function SavePaymentDetails(razorPayRs, cart, api_id, req) {
         };
 
         const paymentDetails = {
-            payment_detail_id: KeyGen.GetKey(),
             payment_link_id: razorPayRs.id,
-            order_id: cart.session_id,
+            order_id: cart._id,
             payment_api_id: api_id,
             payment_time: new Date().toISOString(),
-            payment_for: cart.json_food_details,
+            payment_for: 'Food Order',
             is_payment_confirmed: false,
-            created_by: req.user.user_id,
+            created_by: req.user._id,
             created_on: new Date().toISOString(),
-            updated_by: req.user.user_id,
+            updated_by: req.user._id,
             updated_on: new Date().toISOString()
         };
-
         const res = await PaymentDetails.create(paymentDetails);
         if (res) {
             response.status = true;
-            response.message = Message.Saved;
+            response.message = Message;
             response.data = paymentDetails;
             return response;
         } else {

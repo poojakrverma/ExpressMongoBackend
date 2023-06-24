@@ -2,9 +2,8 @@ import mongoose, { Schema, model } from 'mongoose';
 
 const paymentAPISchema = new mongoose.Schema({
   payment_api_id: {
-    type: String,
-    required: true,
-    unique: true
+    type: mongoose.Schema.Types.ObjectId,
+    alias: '_id' // Map 'payment_api_id' field to '_id'
   },
   payment_api_name: {
     type: String,

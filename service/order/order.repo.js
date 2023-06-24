@@ -1,6 +1,6 @@
-import { OrderItems, Orders } from "../../models/order/order.model.js";
+import { Orders } from "../../models/order/order.model.js";
 import { User } from "../../models/user.js";
-import { OrderStatus } from "../../utils/constant.js";
+import { Message, OrderStatus } from "../../utils/constant.js";
 import KeyGen from "../../utils/key.js";
 import * as _payment from "../payment/payment.repo.js";
 import * as _razorPay from "../payment/razorpay.repo.js";
@@ -13,7 +13,7 @@ export async function getAllOrderByRestrauntId(req) {
     const response = { status: false, message: '', data: null };
 
     try {
-        const orders = await Orders.find({ restraunt_id: req.user.user_id, created_on: { $gte: new Date().setUTCHours(0, 0, 0, 0), $lt: new Date().setUTCHours(23, 59, 59, 999) } });
+        const orders = await Orders.find({ restraunt_id: req.user._id, created_on: { $gte: new Date().setUTCHours(0, 0, 0, 0), $lt: new Date().setUTCHours(23, 59, 59, 999) } });
 
         if (!orders || orders.length === 0) {
             response.message = 'No orders found';
@@ -22,7 +22,7 @@ export async function getAllOrderByRestrauntId(req) {
 
         for (let i = 0; i < orders.length; i++) {
             const order = orders[i];
-            const orderItems = await OrderItems.find({ order_id: order.order_id });
+            const orderItems = orders[i].OrderItems;
 
             if (!orderItems || orderItems.length === 0) {
                 response.message = 'No order items found for the order';
@@ -49,7 +49,7 @@ export async function getAllOrderByRestrauntIdDescending(req) {
     const response = { status: false, message: '', data: null };
 
     try {
-        const orders = await Orders.find({ restraunt_id: req.user.user_id }).sort({ created_on: -1 });
+        const orders = await Orders.find({ restraunt_id: req.user._id }).sort({ created_on: -1 });
 
         if (!orders || orders.length === 0) {
             response.message = 'No orders found';
@@ -58,7 +58,7 @@ export async function getAllOrderByRestrauntIdDescending(req) {
 
         for (let i = 0; i < orders.length; i++) {
             const order = orders[i];
-            const orderItems = await OrderItems.find({ order_id: order.order_id });
+            const orderItems = orders[i].OrderItems;
 
             if (!orderItems || orderItems.length === 0) {
                 response.message = 'No order items found for the order';
@@ -92,7 +92,7 @@ export async function getOrderDetailsByOrderId(OrderId) {
             return response;
         }
 
-        const orderItems = await OrderItems.find({ order_id: OrderId });
+        const orderItems = order.OrderItems;
 
         if (!orderItems || orderItems.length === 0) {
             response.message = 'No order items found for the order';
@@ -123,48 +123,51 @@ export async function saveOrder(paymentRzPay, req) {
         }
 
         const cartDetails = await _cart.getCart(paymentRzPay.session_id, req);
-
         if (!cartDetails) {
             response.message = 'Cart not found';
             return response;
         }
 
         const foodDetails = cartDetails.food_details;
+        console.log(foodDetails);
 
         const order = new Orders();
-
-        order.order_id = KeyGen.GetKey();
         order.total_price = cartDetails.total_amount;
-        order.customer_id = req.user.user_id;
+        order.customer_id = req.user._id;
         order.restraunt_id = cartDetails.food_details[0].restraunt_id;
         order.delivery_address = '';
         order.discount = '';
         order.notes = '';
-        order.order_details = cartDetails.json_food_details;
-        order.updated_by = req.user.user_id;
+        order.order_details = JSON.stringify(foodDetails);
+        order.updated_by = req.user._id;
         order.updated_on = new Date();
-        order.created_by = req.user.user_id;
+        order.created_by = req.user._id;
         order.created_on = new Date();
-        order.delivery_address = cartDetails.address;
+        order.delivery_address = cartDetails?.address || '';
         order.executive_id = 'Test Rider';
         order.delivery_by = new Date(Date.now() + 40 * 60000);
 
         order.OrderItems = [];
         for (const item of foodDetails) {
-            const orderItem = new OrderItems();
-            orderItem.order_item_id = KeyGen.GetKey();
-            orderItem.order_id = order.order_id;
-            orderItem.food_category_id = '';
-            orderItem.order_item_price = item.price;
-            orderItem.order_item_total_price = item.price * item.quantity;
-            orderItem.order_item_qty = item.quantity;
-            orderItem.order_item_name = item.food_name;
-            orderItem.is_active = true;
-            orderItem.updated_by = req.user.user_id;
-            orderItem.updated_on = new Date();
-            orderItem.created_by = req.user.user_id;
-            orderItem.created_on = new Date();
-            order.OrderItems.push(orderItem);
+
+            order.OrderItems.push({
+                food_category_id: '6497441b3fd9f43cba4b3ed9',
+                order_item_price: item.price,
+                order_item_total_price: item.price * item.quantity,
+                order_item_qty: item.quantity,
+                order_item_name: item.food_name,
+                is_active: true,
+                updated_by: req.user._id,
+                updated_on: new Date(),
+                created_by: req.user._id,
+                created_on: new Date()
+            });
+        }
+
+        const resp = await Orders.create(order);
+        if (!resp) {
+            response.message = 'Invalid order data';
+            return response;
         }
 
         const paymentUpdateResult = await _payment.UpdatePaymentDetails(paymentRzPay.session_id, order.order_id, req);
@@ -174,28 +177,7 @@ export async function saveOrder(paymentRzPay, req) {
             return response;
         }
 
-        if (!order) {
-            response.message = 'Invalid order data';
-            return response;
-        }
-
-        order.customer_id = req.user.user_id;
-        order.is_active = true;
-        order.created_by = req.user.user_id;
-        order.created_on = new Date();
-        order.updated_by = req.user.user_id;
-        order.updated_on = new Date();
-
-        await Orders.create(order);
-
-        // const objOrderItems = await saveOrderItems(order.OrderItems, order.order_id);
-
-        // if (!objOrderItems.status) {
-        //     response.message = 'Order items not saved';
-        //     return response;
-        // }
-
-        const objRestraunt = await _restrauntDailyLogin.UpdateTotalOrder(order, req);
+        const objRestraunt = await _restrauntDailyLogin.UpdateTotalOrder(resp, req);
 
         if (!objRestraunt.status) {
             response.message = objRestraunt.message;
@@ -218,7 +200,7 @@ export async function saveOrder(paymentRzPay, req) {
         // await SendEmail.sendEmail(email);
 
         response.status = true;
-        response.message = `Order placed successfully with order id: ${order.order_id}`;
+        response.message = `Order placed successfully with order id: ${resp._id}`;
         response.data = order;
         return response;
     } catch (error) {
@@ -246,14 +228,12 @@ export async function updateOrder(order, req) {
         order.created_by = data.created_by;
         order.created_on = data.created_on;
 
-        await Orders.findByIdAndUpdate(order.order_id, order);
-
-        // const objOrderItems = await saveOrderItems(order.OrderItems, order.order_id);
-
-        // if (!objOrderItems.status) {
-        //     response.message = 'Order items not saved';
-        //     return response;
-        // }
+        const resp = await Orders.findByIdAndUpdate(order.order_id, order);
+        if (!resp) {
+            response.status = false;
+            response.message = Message.NotSaved;
+            return response;
+        }
 
         response.status = true;
         response.message = `Order updated successfully with order id: ${order.order_id}`;
@@ -282,10 +262,10 @@ export async function updateOrderStatus(order, req) {
         }
 
         data.order_status = order.order_status;
-        data.updated_by = req.user.user_id;
+        data.updated_by = req.user._id;
         data.updated_on = new Date();
 
-        await Orders.findByIdAndUpdate(order.order_id, data);
+        const resp = await Orders.findByIdAndUpdate(order.order_id, data);
 
         if (order.order_status === OrderStatus.Cooked) {
             const objOrder = await Orders.findOne({ order_id: order.order_id });
@@ -294,7 +274,7 @@ export async function updateOrderStatus(order, req) {
 
         response.status = true;
         response.message = 'Order status updated';
-        response.data = order;
+        response.data = resp;
         return response;
     } catch (error) {
         response.message = error.message;

@@ -1,47 +1,53 @@
+import mongoose from "mongoose";
 import { FoodCategory } from "../../models/food/foodCategory.model.js";
+import { Message } from "../../utils/constant.js";
 import KeyGen from './../../utils/key.js'
 
 export async function SaveFoodCategory(foodCategory, req) {
     try {
-        foodCategory.food_category_id = KeyGen.GetKey();
-        foodCategory.created_by = req.user.user_id;
-        foodCategory.updated_by = req.user.user_id;
-        console.log("foodCategory repo start");
+        foodCategory.created_by = req.user._id;
+        foodCategory.updated_by = req.user._id;
         const newCategory = new FoodCategory(foodCategory);
-        await newCategory.save();
-        console.log("foodCategory repo end");
+        const resp = await newCategory.save();
+        if (!resp) {
+            return {
+                status: false,
+                message: Message.NotSaved
+            }
+        }
+
         return {
-            success: true,
-            message: "Food category saved successfully",
+            status: true,
+            message: "Food category saved statusfully",
             data: newCategory,
         };
     } catch (error) {
         console.log("foodCategory repo exception");
-        return { success: false, message: error.message };
+        return { status: false, message: error.message };
     }
 }
 
 export async function UpdateFoodCategory(foodCategory, req) {
     try {
-        foodCategory.updated_by = req.user.user_id;
+        foodCategory.updated_by = req.user._id;
         const updatedCategory = await FoodCategory.findOneAndUpdate(
-            { food_category_id: foodCategory.food_category_id },
+            { _id: foodCategory._id },
             foodCategory,
             { new: true }
         );
         if (!updatedCategory) {
             return {
-                success: false,
+                status: false,
                 message: `Food category with id ${foodCategory.food_category_id} not found`,
             };
         }
         return {
-            success: true,
-            message: "Food category updated successfully",
+            status: true,
+            message: "Food category updated statusfully",
             data: updatedCategory,
         };
     } catch (error) {
-        return { success: false, message: error.message };
+        return { status: false, message: error.message };
     }
 }
 
@@ -50,36 +56,36 @@ export async function DeleteFoodCategory(id, req) {
         const deletedCategory = await FoodCategory.findOneAndDelete({ food_category_id: id });
         if (!deletedCategory) {
             return {
-                success: false,
+                status: false,
                 message: `Food category with id ${id} not found`,
             };
         }
-        return { success: true, message: "Food category deleted successfully" };
+        return { status: true, message: "Food category deleted statusfully" };
     } catch (error) {
-        return { success: false, message: error.message };
+        return { status: false, message: error.message };
     }
 }
 
 export async function GetAllFoodCategroy() {
     try {
         const categories = await FoodCategory.find();
-        return { success: true, data: categories };
+        return { status: true, data: categories };
     } catch (error) {
-        return { success: false, message: error.message };
+        return { status: false, message: error.message };
     }
 }
 
 export async function GetFoodCategroyById(id) {
     try {
-        const category = await FoodCategory.findOne({ food_category_id: id });
+        const category = await FoodCategory.findOne({ _id: id });
         if (!category) {
             return {
-                success: false,
+                status: false,
                 message: `Food category with id ${id} not found`,
             };
         }
-        return { success: true, data: category };
+        return { status: true, data: category };
     } catch (error) {
-        return { success: false, message: error.message };
+        return { status: false, message: error.message };
     }
 }

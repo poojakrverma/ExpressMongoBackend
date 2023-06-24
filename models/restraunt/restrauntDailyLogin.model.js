@@ -1,13 +1,15 @@
 import mongoose from "mongoose";
+import { RestrauntMaster } from "./restraunt.model.js";
 
 const schema = new mongoose.Schema({
   restraunt_daily_login_id: {
-    type: String,
-    required: true
+    type: mongoose.Schema.Types.ObjectId,
+    alias: '_id' // Map 'restraunt_daily_login_id' field to '_id'
   },
   restraunt_id: {
-    type: String,
-    required: true
+    type: mongoose.Schema.Types.ObjectId,
+    ref: RestrauntMaster, // Name of the referenced collection
+    required: true,
   },
   date: {
     type: Date,

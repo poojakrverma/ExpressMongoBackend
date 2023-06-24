@@ -2,9 +2,8 @@ import mongoose, { Schema, model } from 'mongoose';
 
 const foodCategorySchema = new mongoose.Schema({
   food_category_id: {
-    type: String,
-    required: true,
-    unique: true
+    type: mongoose.Schema.Types.ObjectId,
+    alias: '_id' // Map 'food_category_id' field to '_id'
   },
   food_category_name: {
     type: String,

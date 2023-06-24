@@ -50,23 +50,19 @@ async function saveOtp(otpDto, req) {
             return response;
         }
 
-        otpDto.OtpId = KeyGen.getKey();
         otpDto.OTP = GetOTP();
         otpDto.Email = Email;
         otpDto.OtpTime = new Date();
         otpDto.OtpExpiryTime = new Date();
-        otpDto.OtpExpiryTime.setMinutes(otpDto.OtpExpiryTime.getMinutes() + 2);
+        otpDto.OtpExpiryTime.setMinutes(otpDto.OtpExpiryTime.getMinutes() + 5);
         otpDto.is_active = true;
         otpDto.created_by = req.user.user_id;
         otpDto.created_on = new Date();
         otpDto.updated_by = req.user.user_id;
         otpDto.updated_on = new Date();
 
-        await _db.otp.create(otpDto);
-
-        const result = await _db.save();
-
-        if (result) {
+        const resp = await OTP.create(otpDto);
+        if (resp) {
             // await sendEmail({
             //     EmailBody: `Dear ${Email}. Login OTP is ${otpDto.OTP}. It will be expired within 2 minutes.`,
             //     FromEmailid: _configuration.getValue('Email:emailId'),
