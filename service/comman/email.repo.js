@@ -32,7 +32,3 @@ export async function sendEmail(dtoEmail) {
         return error;
     }
 }
-
-// Call the function with the DtoEmail object
-//sendEmail(dtoEmail);
-//module.exports = sendEmail;

@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 
 /**
- * @function ConnectMongoDB is used to make a connection between mongodb and server
- * @author Purushuttam Kumar
+ * @description ConnectMongoDB is used to make a connection between mongodb and server
  */
 export const ConnectMongoDB = () => {
     mongoose

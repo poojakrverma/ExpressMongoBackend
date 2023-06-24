@@ -1,0 +1,141 @@
+<html>
+
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h2 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tfoot td {
+            font-weight: bold;
+        }
+
+        .details {
+            margin-bottom: 16px;
+        }
+
+        .details p {
+            margin: 8px 0;
+        }
+
+        .details p.bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Food Order Confirmation</h2>
+    <p>Thank you for your order, <%= name %>! Here are the details:</p>
+    <table>
+        <tr>
+            <td>Restaurant:</td>
+            <td>
+                <%= restrauntDetails.restraunt_name %>
+            </td>
+        </tr>
+        <tr>
+            <td>Order ID:</td>
+            <td>
+                <%= order.order_id %>
+            </td>
+        </tr>
+        <tr>
+            <td>Payment Method:</td>
+            <td>RazorPay</td>
+        </tr>
+        <tr>
+            <td>Amount Paid:</td>
+            <td>
+                <%= order.total_price %>
+            </td>
+        </tr>
+        <tr>
+            <td>Payment Date:</td>
+            <td>
+                <%= new Date().toLocaleDateString() %>
+            </td>
+        </tr>
+        <tr>
+            <td>Delivery Time:</td>
+            <td>
+                <%= order.delivery_by.toLocaleTimeString([], { hour: '2-digit' , minute: '2-digit' }) %>
+            </td>
+        </tr>
+        <tr>
+            <td>Delivery Address:</td>
+            <td>
+                <%= order.delivery_address %>
+            </td>
+        </tr>
+        <tr>
+            <td>Order Items:</td>
+            <td>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Food Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% order.OrderItems.forEach(item=> { %>
+                            <tr>
+                                <td>
+                                    <%= item.order_item_name %>
+                                </td>
+                                <td>
+                                    <%= item.order_item_qty %>
+                                </td>
+                                <td>
+                                    <%= item.order_item_price %>
+                                </td>
+                                <td>
+                                    <%= item.order_item_total_price %>
+                                </td>
+                            </tr>
+                            <% }); %>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3">Order Total:</td>
+                            <td>
+                                <%= order.total_price %>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <div class="details">
+        <p>We hope you enjoy your meal from <%= restrauntDetails.restraunt_name %>. Please contact us if you have any
+                questions or concerns.</p>
+        <p>Thank you for choosing us for your food delivery needs!</p>
+    </div>
+</body>
+
+</html>
