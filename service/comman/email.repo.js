@@ -1,7 +1,8 @@
 import { createTransport } from 'nodemailer';
 
-async function sendEmail(dtoEmail) {
+export async function sendEmail(dtoEmail) {
     try {
+        console.log(dtoEmail);
         const transporter = createTransport({
             service: 'gmail',
             auth: {
@@ -20,7 +21,7 @@ async function sendEmail(dtoEmail) {
             html: dtoEmail.emailBody
         };
 
-        await transporter.sendMail(mailOptions);
+        return await transporter.sendMail(mailOptions);
     } catch (error) {
         console.error(error);
     }
@@ -28,4 +29,4 @@ async function sendEmail(dtoEmail) {
 
 // Call the function with the DtoEmail object
 //sendEmail(dtoEmail);
-module.exports = sendEmail;
+//module.exports = sendEmail;

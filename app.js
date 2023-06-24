@@ -9,6 +9,7 @@ import orderRouter from './routes/order/order.router.js'
 import cartRouter from './routes/order/cart.router.js'
 import orderCancellationRouter from './routes/order/orderCancellation.router.js'
 import razorPayRouter from './routes/payment/razorpay.router.js'
+import emailRouter from './routes/comman/email.router.js'
 import otpRouter from './routes/comman/otp.router.js'
 import restrauntRouter from './routes/restraunt/reatraunt.router.js'
 import { config } from 'dotenv'
@@ -40,6 +41,7 @@ app.use("/api/v1/Orders", orderRouter);
 app.use("/api/v1/Cart", cartRouter);
 app.use("/api/v1/OrderCancellation", orderCancellationRouter);
 app.use("/api/v1/RazorPay", razorPayRouter);
+app.use("/api/v1/Email", emailRouter);
 app.use("/api/v1/Otp", otpRouter);
 app.use("/api/v1/RestrauntMaster", restrauntRouter)
 
