@@ -6,7 +6,7 @@ import ejs from 'ejs'
 // Read the HTML template file
 const loadHTMLTemplate = () => {
     return new Promise((resolve, reject) => {
-        fs.readFile('./../ExpressMongoBackend/assets/email/otpMail.ejs', 'utf8', (error, data) => {
+        fs.readFile('./views/email/otpMail.ejs', 'utf8', (error, data) => {
             if (error) {
                 reject(error);
             } else {
