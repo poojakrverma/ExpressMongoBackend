@@ -3,10 +3,15 @@ import { GetOTP } from "./otp.repo.js";
 import fs from 'fs'
 import ejs from 'ejs'
 
-// Read the HTML template file
-const loadHTMLTemplate = () => {
+/**
+ * @description this method is used to fetch the email template by passing the template name.
+ * @param {*} templateName 
+ * @returns email template.
+ * @author Purushuttam Kumar
+ */
+const loadEmailViews = (templateName) => {
     return new Promise((resolve, reject) => {
-        fs.readFile('./views/email/otpMail.ejs', 'utf8', (error, data) => {
+        fs.readFile(`./views/email/${templateName}.ejs`, 'utf8', (error, data) => {
             if (error) {
                 reject(error);
             } else {
@@ -26,9 +31,9 @@ export const sentOTPEmail = async (dtoEmail) => {
     try {
         // Generate the OTP
         const otp = GetOTP();
-        const name = 'Purushuttam kumar'
+        const name = dtoEmail.name;
         // Load the HTML template
-        const htmlTemplate = await loadHTMLTemplate();
+        const htmlTemplate = await loadEmailViews('otpMail');
         // Replace the OTP placeholder and name with the actual OTP value and name
         const emailContent = ejs.render(htmlTemplate, { otp, name });
         const resp = await sendEmail({
@@ -36,7 +41,6 @@ export const sentOTPEmail = async (dtoEmail) => {
             "subject": dtoEmail.subject,
             "emailBody": emailContent
         })
-        console.log(resp);
         return resp;
 
     } catch (error) {

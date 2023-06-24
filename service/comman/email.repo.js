@@ -1,5 +1,10 @@
 import { createTransport } from 'nodemailer';
 
+/**
+ * @description this is comman method to send email by passing dtoEmail object
+ * @param {*} dtoEmail 
+ * @returns SentMessageInfo
+ */
 export async function sendEmail(dtoEmail) {
     try {
         console.log(dtoEmail);
@@ -24,6 +29,7 @@ export async function sendEmail(dtoEmail) {
         return await transporter.sendMail(mailOptions);
     } catch (error) {
         console.error(error);
+        return error;
     }
 }
 

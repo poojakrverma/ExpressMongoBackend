@@ -80,6 +80,11 @@ const OrdersSchema = new mongoose.Schema({
   },
   order_status: {
     type: Number,
+    require: true,
+    enum: {
+      values: [1, 2, 3, 4, 5],
+      message: '{VALUE} is not supported for order status'
+    }
   },
   is_active: {
     type: Boolean,
