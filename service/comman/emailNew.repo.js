@@ -8,7 +8,7 @@ import ejs from 'ejs'
  * @param {*} templateName 
  * @returns email template.
  */
-const loadEmailViews = async (templateName, emailDataObject) => {
+export const loadEmailViews = async (templateName, emailDataObject) => {
     try {
         const data = await readFile(`./views/email/${templateName}.ejs`, 'utf8');
         const emailContent = ejs.render(data, emailDataObject);
@@ -51,6 +51,23 @@ export const sendEmailVerificationMail = async (dtoEmail) => {
             verificationLink: 'https://www.google.com'
         };
         const htmlTemplate = await loadEmailViews('emailVerification', emailObj);
+        const resp = await sendEmail({
+            "toEmailId": dtoEmail.toEmailId,
+            "subject": dtoEmail.subject,
+            "emailBody": htmlTemplate
+        })
+        return resp;
+    } catch (error) {
+        console.log(error);
+        return error;
+    }
+}
+
+export const sendOrderConfirmationMail = async (orders) => {
+    try {
+        orders.restraunt_name = 'Test Restraunt'
+        orders.customer_name = 'Test Customer';
+        const htmlTemplate = await loadEmailViews('orderConfirmation', orders);
         const resp = await sendEmail({
             "toEmailId": dtoEmail.toEmailId,
             "subject": dtoEmail.subject,

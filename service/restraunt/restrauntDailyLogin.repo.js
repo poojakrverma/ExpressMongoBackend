@@ -64,63 +64,75 @@ export async function OfflineRestraunt(restrauntDailyLogin, req) {
             return {
                 status: false,
                 message: Message.InvalidData
-            }
+            };
         }
+
+        const currentDate = new Date().toISOString().split('T')[0];
         const restrauntDailyLoginObj = await RestrauntDailyLogin.findOneAndUpdate(
             {
                 restraunt_id: restrauntDailyLogin.restraunt_id,
-                created_on: {
-                    $eq: new Date().toISOString().split('T')[0],
-                },
+                created_on: { $eq: currentDate }
             },
             {
-                logout_time: new Date().toISOString(),
-                is_active: false,
-                updated_by: req.user._id,
-                updated_on: new Date().toISOString(),
+                $set: {
+                    logout_time: new Date().toISOString(),
+                    is_active: false,
+                    updated_by: req.user._id,
+                    updated_on: new Date().toISOString()
+                }
             }
         );
+
         if (restrauntDailyLoginObj) {
             return {
                 status: true,
-                message: 'Restraunt Logout Successfull',
+                message: 'Restraunt Logout Successful'
             };
         } else {
             return {
                 status: false,
-                message: Message.NotUpdated,
+                message: Message.NotUpdated
             };
         }
     } catch (error) {
         return {
             status: false,
             message: error
-        }
+        };
     }
 }
 
 export async function OnlineRestraunt(restrauntDailyLogin, req) {
     try {
         if (!restrauntDailyLogin) {
-            response.respMsg = Message.InvalidData;
-            return response;
+            return {
+                status: false,
+                message: Message.InvalidData,
+                data: null
+            };
         }
 
-        const objRestrant = await RestrauntDailyLogin.findOne({
-            restraunt_id: req.user._id,
-            date: {
-                $eq: new Date().toISOString().split('T')[0]
+        const currentDate = new Date().toISOString().split('T')[0];
+        const objRestrant = await RestrauntDailyLogin.findOneAndUpdate(
+            {
+                restraunt_id: req.user._id,
+                date: { $eq: currentDate }
+            },
+            {
+                $set: {
+                    is_active: true,
+                    updated_by: req.user._id,
+                    updated_on: new Date().toISOString()
+                }
             }
-        });
-        var resp;
+        );
+
+        let resp;
         if (objRestrant) {
-            objRestrant.is_active = true;
-            objRestrant.updated_by = req.user._id;
-            objRestrant.updated_on = new Date().toISOString();
-            resp = await objRestrant.save();
+            resp = objRestrant;
         } else {
             restrauntDailyLogin.restraunt_id = req.user._id;
-            restrauntDailyLogin.date = new Date().toISOString().split('T')[0];
+            restrauntDailyLogin.date = currentDate;
             restrauntDailyLogin.login_time = new Date().toISOString();
             restrauntDailyLogin.is_active = true;
             restrauntDailyLogin.created_by = req.user._id;
@@ -133,21 +145,21 @@ export async function OnlineRestraunt(restrauntDailyLogin, req) {
         if (resp) {
             return {
                 status: true,
-                message: '"Restraunt Login Successfull"',
-                data: resp || restrauntDailyLogin
-            }
+                message: "Restraunt Login Successful",
+                data: resp
+            };
         } else {
             return {
                 status: false,
                 message: Message.NotSaved,
                 data: null
-            }
+            };
         }
     } catch (error) {
         return {
             status: false,
             message: error
-        }
+        };
     }
 }
 
@@ -160,12 +172,21 @@ export async function UpdateCancelledOrder(orders, req) {
                 data: null
             };
         }
-        const objRestrauntLog = await RestrauntDailyLogin.findOne({
-            restraunt_id: orders.restraunt_id,
-            date: {
-                $eq: new Date().toISOString().split('T')[0],
+
+        const currentDate = new Date().toISOString().split('T')[0];
+        const objRestrauntLog = await RestrauntDailyLogin.findOneAndUpdate(
+            {
+                restraunt_id: orders.restraunt_id,
+                date: { $eq: currentDate }
             },
-        });
+            {
+                $inc: {
+                    total_cancelled_orders: 1,
+                    total_cancelled_orders_value: orders.total_price
+                }
+            }
+        );
+
         if (!objRestrauntLog) {
             return {
                 status: false,
@@ -173,9 +194,7 @@ export async function UpdateCancelledOrder(orders, req) {
                 data: null
             };
         }
-        objRestrauntLog.total_cancelled_orders++;
-        objRestrauntLog.total_cancelled_orders_value += orders.total_price;
-        await objRestrauntLog.save();
+
         return {
             status: true,
             message: "Order Updated in Restraunt Dashboard",
@@ -200,12 +219,19 @@ export async function UpdateCompletedOrder(orders, req) {
             };
         }
 
-        const objRestrauntLog = await RestrauntDailyLogin.findOne({
-            restraunt_id: orders.restraunt_id,
-            date: {
-                $eq: new Date().toISOString().split('T')[0],
+        const currentDate = new Date().toISOString().split('T')[0];
+        const objRestrauntLog = await RestrauntDailyLogin.findOneAndUpdate(
+            {
+                restraunt_id: orders.restraunt_id,
+                date: { $eq: currentDate }
             },
-        });
+            {
+                $inc: {
+                    total_completed_order: 1,
+                    total_completed_orders_value: orders.total_price
+                }
+            }
+        );
 
         if (!objRestrauntLog) {
             return {
@@ -214,11 +240,6 @@ export async function UpdateCompletedOrder(orders, req) {
                 data: null
             };
         }
-
-        objRestrauntLog.total_completed_order++;
-        objRestrauntLog.total_completed_orders_value += orders.total_price;
-
-        await objRestrauntLog.save();
 
         return {
             status: true,
@@ -244,13 +265,20 @@ export async function UpdateTotalOrder(orders, req) {
             };
         }
 
-        const objRestrauntLog = await RestrauntDailyLogin.findOne({
-            restraunt_id: orders.restraunt_id,
-            is_active: true,
-            date: {
-                $eq: new Date().toISOString().split('T')[0],
+        const currentDate = new Date().toISOString().split('T')[0];
+        const objRestrauntLog = await RestrauntDailyLogin.findOneAndUpdate(
+            {
+                restraunt_id: orders.restraunt_id,
+                is_active: true,
+                date: { $eq: currentDate }
             },
-        });
+            {
+                $inc: {
+                    total_orders: 1,
+                    total_orders_value: orders.total_price
+                }
+            }
+        );
 
         if (!objRestrauntLog) {
             return {
@@ -259,11 +287,6 @@ export async function UpdateTotalOrder(orders, req) {
                 data: null
             };
         }
-
-        objRestrauntLog.total_orders++;
-        objRestrauntLog.total_orders_value += orders.total_price;
-
-        await objRestrauntLog.save();
 
         return {
             status: true,

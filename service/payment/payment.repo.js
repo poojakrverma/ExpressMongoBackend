@@ -49,20 +49,25 @@ export async function UpdatePaymentDetails(session_id, order_id, req) {
             message: '',
             data: null
         };
+        const res = await PaymentDetails.findOneAndUpdate(
+            { order_id: session_id },
+            {
+                $set: {
+                    order_id: order_id,
+                    is_payment_confirmed: true,
+                    updated_on: new Date().toISOString()
+                }
+            },
 
-        const paymentDetail = await PaymentDetails.findOne({ order_id: session_id });
-        paymentDetail.order_id = order_id;
-        paymentDetail.is_payment_confirmed = true;
-        paymentDetail.updated_on = new Date().toISOString();
-        const res = await PaymentDetails.updateOne({ _id: paymentDetail._id }, paymentDetail);
+        );
         if (res) {
             response.status = true;
             response.message = Message.Updated;
-            response.data = paymentDetail;
+            response.data = res;
             return response;
         } else {
             response.message = Message.NotUpdated;
-            response.data = paymentDetail;
+            response.data = res;
             return response;
         }
     } catch (error) {

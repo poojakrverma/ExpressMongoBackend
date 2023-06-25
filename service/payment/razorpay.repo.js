@@ -8,12 +8,13 @@ import fetch from 'node-fetch';
 
 
 export async function GetRazorPayPaymentLink(cart, req) {
-    const response = await _cart.addToCart(cart, req);
-    if (!response.status) {
-        return response;
+    const addToCartResponse = await _cart.addToCart(cart, req);
+    if (!addToCartResponse.status) {
+        return addToCartResponse;
     }
 
-    const apiDetails = await PaymentAPI.findOne({ _id: "649748bfee035e3bcce4e49a" });
+    const { payment_api_key, payment_api_secret_key, payment_url } = await PaymentAPI.findOne({ _id: "649748bfee035e3bcce4e49a" });
+
     const options = {
         amount: cart.total_amount * 100, // Amount in paise
         currency: "INR",
@@ -34,28 +35,23 @@ export async function GetRazorPayPaymentLink(cart, req) {
         notes: {
             policy_name: "Test Express Mongodb Backend API"
         },
-        callback_url: "http://localhost:4200/details/restraunt-food/order-Confirmation",
+        callback_url: process.env.PAYMENT_CALLBACK_URL || "http://localhost:4200/details/restraunt-food/order-Confirmation",
         callback_method: "get"
     };
 
-    const jsonData = JSON.stringify(options);
-
-    const authInfo = apiDetails.payment_api_key + ":" + apiDetails.payment_api_secret_key;
-    const encodedAuthInfo = Buffer.from(authInfo).toString("base64");
-
-    const headers = {
-        Authorization: `Basic ${encodedAuthInfo}`,
-        'Content-Type': 'application/json',
-    };
+    const encodedAuthInfo = Buffer.from(`${payment_api_key}:${payment_api_secret_key}`).toString("base64");
 
     const requestOptions = {
         method: 'POST',
-        headers: headers,
-        body: jsonData,
+        headers: {
+            Authorization: `Basic ${encodedAuthInfo}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(options),
     };
 
     try {
-        const paymentLinkResponse = await fetch(apiDetails.payment_url + 'payment_links', requestOptions);
+        const paymentLinkResponse = await fetch(payment_url + 'payment_links', requestOptions);
         const responseData = await paymentLinkResponse.json();
 
         const resp = await _payment.SavePaymentDetails(responseData, cart, apiDetails._id, req);
@@ -78,45 +74,43 @@ export async function GetRazorPayPaymentLink(cart, req) {
         return {
             status: false,
             message: error
-        }
+        };
     }
 }
 
 export async function FetchRazorPayPaymentInformation(paymentRzPay, req) {
-
-    const response = { status: false, message: '', data: null }
     try {
         const paymentDetails = await PaymentDetails.findOne({ order_id: paymentRzPay.session_id });
-        const apiDetails = await PaymentAPI.findOne({ _id: "649748bfee035e3bcce4e49a" });
+        const { payment_api_key, payment_api_secret_key } = await PaymentAPI.findOne({ _id: "649748bfee035e3bcce4e49a" });
         const client = new Razorpay({
-            key_id: apiDetails.payment_api_key,
-            key_secret: apiDetails.payment_api_secret_key,
+            key_id: payment_api_key,
+            key_secret: payment_api_secret_key,
         });
 
         const payment = await client.payments.fetch(paymentRzPay.razorpay_payment_id);
-        const paymentId = payment.id;
-        const amount = payment.amount;
         const status = payment.status;
 
-        console.log("Payment ID: " + paymentId);
-        console.log("Amount: " + amount);
-        console.log("Status: " + status);
-
         if (status === "captured") {
-            response.status = true;
-            response.message = "Payment Successful";
-            response.data = payment;
+            const response = {
+                status: true,
+                message: "Payment Successful",
+                data: payment
+            };
+            return response;
         } else {
-            response.status = false;
-            response.message = "Payment not successfull"
+            return {
+                status: false,
+                message: "Payment not successful"
+            };
         }
-
-        return response;
     } catch (error) {
         console.error(error);
-        response.status = false;
-        response.data = error;
-        return response;
+        return {
+            status: false,
+            message: "Error occurred",
+            data: error
+        };
     }
 }
+
 

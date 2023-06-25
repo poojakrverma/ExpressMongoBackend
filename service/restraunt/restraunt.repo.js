@@ -15,10 +15,6 @@ export async function DeleteRestrauntMaster(restraunt_id, req) {
 
         if (data) {
             await data.remove();
-
-            // const photoList = await RestrauntPhoto.find({ restraunt_id });
-            // await RestrauntPhoto.deleteMany({ restraunt_id });
-
             response.status = true;
             response.message = Message.Deleted;
             return response;
@@ -46,6 +42,7 @@ export async function GetAllRestrauntByCityCode(cityCode, req) {
 
         const onlineRestraunt = [];
         const restrauntlist = await RestrauntMaster.find({ city_code: cityCode, is_active: true }).exec();
+        const currentDate = new Date().toISOString().split('T')[0];
 
         for (let i = 0; i < restrauntlist.length; i++) {
             const restraunt = restrauntlist[i];
@@ -53,7 +50,7 @@ export async function GetAllRestrauntByCityCode(cityCode, req) {
                 restraunt_id: restraunt.restraunt_id,
                 is_active: true,
                 date: {
-                    $eq: new Date().toISOString().split('T')[0],
+                    $eq: currentDate,
                 },
             }).exec();
 
@@ -81,31 +78,22 @@ export async function GetAllRestrauntByCityCode(cityCode, req) {
 }
 
 
-export async function GetAllRestrauntMaster(req) {
+export async function GetAllRestrauntMaster() {
     try {
-        const response = {
-            status: false,
-            message: '',
-            data: null
-        };
-
         const restrants = await RestrauntMaster.find().exec();
 
-        if (restrants != null && restrants.length > 0) {
-            // for (let i = 0; i < restrants.length; i++) {
-            //     const restraunt = restrants[i];
-            //     const photoList = await RestrauntPhoto.find({ restraunt_id: restraunt.restraunt_id }).exec();
-            //     restraunt.restraunt_photos = photoList;
-            // }
-
-            response.status = true;
-            response.message = Message.Fetched;
-            response.data = restrants;
-            return response;
+        if (restrants.length > 0) {
+            return {
+                status: true,
+                message: Message.Fethched,
+                data: restrants
+            };
         } else {
-            response.message = Message.WrongId;
-            response.data = restrants;
-            return response;
+            return {
+                status: false,
+                message: Message.WrongId,
+                data: restrants
+            };
         }
     } catch (error) {
         return {
@@ -116,26 +104,23 @@ export async function GetAllRestrauntMaster(req) {
     }
 }
 
-export async function GetRestrauntDetailsById(restraunt_id, req) {
+
+export async function GetRestrauntDetailsById(restraunt_id) {
     try {
-        const response = {
-            status: false,
-            message: '',
-            data: null
-        };
-
         const restrant = await RestrauntMaster.findOne({ restraunt_id }).exec();
-        if (restrant != null) {
-            //restrant.restraunt_photos = await RestrauntPhoto.find({ restraunt_id }).exec();
 
-            response.status = true;
-            response.message = Message.Fethched;
-            response.data = restrant;
-            return response;
+        if (restrant) {
+            return {
+                status: true,
+                message: Message.Fethched,
+                data: restrant
+            };
         } else {
-            response.message = Message.WrongId;
-            response.data = req.user._user_id;
-            return response;
+            return {
+                status: false,
+                message: Message.WrongId,
+                data: restraunt_id
+            };
         }
     } catch (error) {
         return {
@@ -148,24 +133,20 @@ export async function GetRestrauntDetailsById(restraunt_id, req) {
 
 export async function GetRestrauntMasterById(req) {
     try {
-        const response = {
-            status: false,
-            message: '',
-            data: null
-        };
+        const restrant = await RestrauntMaster.findOne({ restraunt_id: req.user._id }).exec();
 
-        const restrant = await RestrauntMaster.findOne({ restraunt_id: req.user.user_id }).exec();
-        if (restrant != null) {
-            //restrant.restraunt_photos = await RestrauntPhoto.find({ restraunt_id: restrant.restraunt_id }).exec();
-
-            response.status = true;
-            response.message = Message.Fethched;
-            response.data = restrant;
-            return response;
+        if (restrant) {
+            return {
+                status: true,
+                message: Message.Fethched,
+                data: restrant
+            };
         } else {
-            response.message = Message.WrongId;
-            response.data = req.user._user_id;
-            return response;
+            return {
+                status: false,
+                message: Message.WrongId,
+                data: req.user._id
+            };
         }
     } catch (error) {
         return {
@@ -176,32 +157,37 @@ export async function GetRestrauntMasterById(req) {
     }
 }
 
-
-export async function SaveRestrauntMaster(restraunt, req) {
+export async function saveOrUpdateRestrauntMaster(restraunt, req) {
     try {
-        const response = {
-            status: false,
-            message: '',
-            data: null
-        };
+        if (!restraunt) {
+            return {
+                status: false,
+                message: Message.InvalidData,
+                data: null
+            };
+        }
+
         restraunt.is_active = true;
         restraunt.created_by = req.user._id;
         restraunt.created_on = new Date().toISOString();
         restraunt.updated_by = req.user._id;
         restraunt.updated_on = new Date().toISOString();
 
-        const savedRestraunt = await RestrauntMaster.create(restraunt);
-        if (savedRestraunt) {
-            response.status = true;
-            response.message = Message.Saved;
-            response.data = savedRestraunt;
-            return response;
+        const oldData = await RestrauntMaster.findOne({ restraunt_id: req.user._id });
+        let resp
+        if (oldData) {
+            restraunt.created_by = req.user._id;
+            restraunt.created_on = oldData.created_on;
+            resp = await RestrauntMaster.updateOne({ restraunt_id: restraunt.restraunt_id }, restraunt);
         } else {
-            response.message = Message.NotSaved;
-            return response;
+            resp = await RestrauntMaster.create(restraunt);
         }
+        return {
+            status: true,
+            message: Message.Saved,
+            data: resp
+        };
     } catch (error) {
-        console.log(error)
         return {
             status: false,
             message: error,
@@ -209,34 +195,27 @@ export async function SaveRestrauntMaster(restraunt, req) {
         };
     }
 }
+
 
 export async function SaveStatus(status, req) {
     try {
-        const response = {
-            status: false,
-            message: '',
-            data: null
-        };
+        const data = await RestrauntMaster.findOneAndUpdate(
+            { restraunt_id: status.Id },
+            { is_active: status.Status, updated_by: req.user._id, updated_on: new Date().toISOString() }
+        );
 
-        const data = await RestrauntMaster.find({ restraunt_id: status.Id });
         if (data) {
-            data.is_active = status.Status;
-            data.updated_by = req.user.user_id;
-            data.updated_on = new Date().toISOString();
-
-            const updatedData = await data.save();
-            if (updatedData) {
-                response.status = true;
-                response.message = Message.StatusSaved;
-                response.data = status;
-                return response;
-            } else {
-                response.message = Message.StatusNotSaved;
-                return response;
-            }
+            return {
+                status: true,
+                message: Message.StatusSaved,
+                data: status
+            };
         } else {
-            response.message = Message.WrongId;
-            return response;
+            return {
+                status: false,
+                message: Message.StatusNotSaved,
+                data: null
+            };
         }
     } catch (error) {
         return {
@@ -248,44 +227,4 @@ export async function SaveStatus(status, req) {
 }
 
 
-export async function UpdateRestrauntMaster(restraunt, req) {
-    try {
-        const response = {
-            status: false,
-            message: '',
-            data: null
-        };
 
-        if (restraunt) {
-            restraunt.restraunt_id = req.user.user_id;
-            restraunt.is_active = true;
-            restraunt.created_by = req.user.user_id;
-            restraunt.created_on = new Date().toISOString();
-            restraunt.updated_by = req.user.user_id;
-            restraunt.updated_on = new Date().toISOString();
-
-            const oldData = await RestrauntMaster.find({ restraunt_id: req.user.user_id });
-            if (oldData) {
-                restraunt.created_by = req.user.user_id;
-                restraunt.created_on = oldData.created_on;
-                await RestrauntMaster.updateOne({ restraunt_id: restraunt.restraunt_id }, restraunt);
-            } else {
-                await RestrauntMaster.create(restraunt);
-            }
-
-            response.status = true;
-            response.message = Message.Saved;
-            response.data = restraunt;
-            return response;
-        } else {
-            response.message = Message.InvalidData;
-            return response;
-        }
-    } catch (error) {
-        return {
-            status: false,
-            message: error,
-            data: null
-        };
-    }
-}

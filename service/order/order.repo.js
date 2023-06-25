@@ -6,6 +6,7 @@ import * as _payment from "../payment/payment.repo.js";
 import * as _razorPay from "../payment/razorpay.repo.js";
 import * as _restrauntDailyLogin from "../restraunt/restrauntDailyLogin.repo.js";
 import * as _cart from "./cart.repo.js";
+import * as _emailNew from "./../comman/emailNew.repo.js";
 
 
 
@@ -128,14 +129,18 @@ export async function saveOrder(paymentRzPay, req) {
             return response;
         }
 
+        if (paymentDetails.data.amount !== cartDetails.total_amount * 100) {
+            response.message = 'payment amount not match';
+            return response;
+        }
+
         const foodDetails = cartDetails.food_details;
-        console.log(foodDetails);
 
         const order = new Orders();
         order.total_price = cartDetails.total_amount;
         order.customer_id = req.user._id;
         order.restraunt_id = cartDetails.food_details[0].restraunt_id;
-        order.delivery_address = '';
+        order.delivery_address = cartDetails.address || '';
         order.discount = '';
         order.notes = '';
         order.order_details = JSON.stringify(foodDetails);
@@ -143,7 +148,7 @@ export async function saveOrder(paymentRzPay, req) {
         order.updated_on = new Date();
         order.created_by = req.user._id;
         order.created_on = new Date();
-        order.delivery_address = cartDetails?.address || '';
+        order.delivery_address = cartDetails.address || '';
         order.executive_id = 'Test Rider';
         order.delivery_by = new Date(Date.now() + 40 * 60000);
 
@@ -184,20 +189,7 @@ export async function saveOrder(paymentRzPay, req) {
             return response;
         }
 
-        // response = await Template.orderConfirmation(order, cartDetails);
-
-        // if (!response.status) {
-        //     response.message = 'Error sending order confirmation';
-        //     return response;
-        // }
-
-        // const email = {
-        //     ToEmailid: 'purushuttamss128@gmail.com',
-        //     EmailBody: response.data,
-        //     Subject: 'Food Order Confirmation',
-        // };
-
-        // await SendEmail.sendEmail(email);
+        //const emailResp = await _emailNew.sendOrderConfirmationMail(order);
 
         response.status = true;
         response.message = `Order placed successfully with order id: ${resp._id}`;
